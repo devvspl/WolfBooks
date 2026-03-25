@@ -10,7 +10,6 @@ use App\Http\Controllers\Panel\ProfileController;
 use App\Http\Controllers\Panel\SettingsController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Generated\GlobalRegionController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -42,19 +41,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/master', [MasterController::class, 'index'])->name('master');
 
     // Page Builder CRUD
-    Route::get('/master/page-builder',                        [PageBuilderController::class, 'index'])->name('master.page-builder');
-    Route::get('/master/page-builder/add',                    [PageBuilderController::class, 'create'])->name('master.page-builder.create');
-    Route::post('/master/page-builder',                       [PageBuilderController::class, 'store'])->name('master.page-builder.store');
-    Route::get('/master/page-builder/{page}/edit',            [PageBuilderController::class, 'edit'])->name('master.page-builder.edit');
-    Route::put('/master/page-builder/{page}',                 [PageBuilderController::class, 'update'])->name('master.page-builder.update');
-    Route::delete('/master/page-builder/{page}',              [PageBuilderController::class, 'destroy'])->name('master.page-builder.destroy');
-    Route::get('/master/page-builder/{page}/fields/json',     [PageBuilderController::class, 'fields'])->name('master.page-builder.fields.json');
-    Route::post('/master/page-builder/{page}/generate',       [GeneratorController::class, 'generate'])->name('master.page-builder.generate');
+    Route::get('/master/page-builder', [PageBuilderController::class, 'index'])->name('master.page-builder');
+    Route::get('/master/page-builder/add', [PageBuilderController::class, 'create'])->name('master.page-builder.create');
+    Route::post('/master/page-builder', [PageBuilderController::class, 'store'])->name('master.page-builder.store');
+    Route::get('/master/page-builder/{page}/edit', [PageBuilderController::class, 'edit'])->name('master.page-builder.edit');
+    Route::put('/master/page-builder/{page}', [PageBuilderController::class, 'update'])->name('master.page-builder.update');
+    Route::delete('/master/page-builder/{page}', [PageBuilderController::class, 'destroy'])->name('master.page-builder.destroy');
+    Route::get('/master/page-builder/{page}/fields/json', [PageBuilderController::class, 'fields'])->name('master.page-builder.fields.json');
+    Route::post('/master/page-builder/{page}/generate', [GeneratorController::class, 'generate'])->name('master.page-builder.generate');
 
     // Page Fields
-    Route::get('/master/page-builder/{page}/fields',            [PageFieldController::class, 'index'])->name('master.page-builder.fields');
-    Route::post('/master/page-builder/{page}/fields',           [PageFieldController::class, 'store'])->name('master.page-builder.fields.store');
-    Route::put('/master/page-builder/{page}/fields/{field}',    [PageFieldController::class, 'updateSettings'])->name('master.page-builder.fields.settings');
+    Route::get('/master/page-builder/{page}/fields', [PageFieldController::class, 'index'])->name('master.page-builder.fields');
+    Route::post('/master/page-builder/{page}/fields', [PageFieldController::class, 'store'])->name('master.page-builder.fields.store');
+    Route::put('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'updateSettings'])->name('master.page-builder.fields.settings');
     Route::delete('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'destroy'])->name('master.page-builder.fields.destroy');
 
     Route::get('/master/{tab}', [MasterController::class, 'tab'])->name('master.tab');
@@ -69,10 +68,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
     // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────
-
-    // Generated CRUD routes
     Route::prefix('generated')->name('generated.')->group(function () {
-        // GlobalRegion
-                Route::resource('global-regions', GlobalRegionController::class);
     });
 });

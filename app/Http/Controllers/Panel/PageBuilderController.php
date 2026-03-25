@@ -92,9 +92,56 @@ class PageBuilderController extends Controller
     public function destroy(Page $page)
     {
         abort_if($page->user_id !== Auth::id(), 403);
+
+        if ($page->is_generated) {
+            $this->cleanupGenerated($page->page_name);
+        }
+
         $page->delete();
 
         return redirect()->route('master.page-builder')
                          ->with('success', 'Page deleted successfully.');
+    }
+
+    private function cleanupGenerated(string $pageName): void
+    {
+        $modelName  = \Illuminate\Support\Str::studly(\Illuminate\Support\Str::singular($pageName));
+        $routeSlug  = \Illuminate\Support\Str::slug(\Illuminate\Support\Str::plural($pageName));
+        $viewFolder = resource_path("views/generated/{$routeSlug}");
+
+        // Delete model
+        $this->deleteFileIfExists(app_path("Models/Generated/{$modelName}.php"));
+
+        // Delete controller
+        $this->deleteFileIfExists(app_path("Http/Controllers/Generated/{$modelName}Controller.php"));
+
+        // Delete export
+        $this->deleteFileIfExists(app_path("Exports/Generated/{$modelName}Export.php"));
+
+        // Delete views folder
+        if (is_dir($viewFolder)) {
+            array_map('unlink', glob("{$viewFolder}/*.blade.php"));
+            @rmdir($viewFolder);
+        }
+
+        // Remove routes from web.php
+        $routesFile = base_path('routes/web.php');
+        $content    = file_get_contents($routesFile);
+
+        // Remove use statement line
+        $content = preg_replace("/^use App\\\\Http\\\\Controllers\\\\Generated\\\\{$modelName}Controller;\r?\n/m", '', $content);
+
+        // Remove export route line
+        $content = preg_replace("/^[ \t]*Route::get\('{$routeSlug}\/export'[^\n]+\r?\n/m", '', $content);
+
+        // Remove resource route line
+        $content = preg_replace("/^[ \t]*Route::resource\('{$routeSlug}'[^\n]+\r?\n/m", '', $content);
+
+        file_put_contents($routesFile, $content);
+    }
+
+    private function deleteFileIfExists(string $path): void
+    {
+        if (file_exists($path)) unlink($path);
     }
 }
