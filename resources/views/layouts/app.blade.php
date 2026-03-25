@@ -52,25 +52,28 @@
               transition-all duration-300 ease-in-out">
 
     {{-- Brand --}}
-    <div class="flex items-center border-b border-white/10 shrink-0 overflow-hidden h-16"
-         :class="collapsed ? 'justify-center px-2' : 'gap-3 px-4'">
+    <div class="flex items-center border-b border-white/10 shrink-0 h-16 px-3 gap-2 overflow-hidden">
 
-        <div class="flex items-center justify-center w-9 h-9 shrink-0 bg-white/10 rounded-xl border border-white/10 shadow">
+        {{-- Logo icon — click to re-expand when collapsed --}}
+        <div @click="if(collapsed) toggleCollapse()"
+             class="flex items-center justify-center w-9 h-9 shrink-0 bg-white/10 rounded-xl border border-white/10 shadow"
+             :class="collapsed ? 'cursor-pointer hover:bg-white/20 transition' : ''">
             <svg class="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
         </div>
 
+        {{-- Brand text — hidden when collapsed --}}
         <div class="leading-tight min-w-0 flex-1 transition-all duration-300 overflow-hidden"
-             :class="collapsed ? 'w-0 opacity-0 pointer-events-none' : 'opacity-100'">
+             :class="collapsed ? 'w-0 max-w-0 opacity-0 pointer-events-none' : 'opacity-100'">
             <span class="text-white font-bold text-base tracking-tight whitespace-nowrap">WolfBooks</span>
             <p class="text-stone-400 text-[10px] font-medium uppercase tracking-widest whitespace-nowrap">Accounting</p>
         </div>
 
-        {{-- Mobile close --}}
+        {{-- Mobile close (only visible on mobile, no collapse state needed) --}}
         <button @click="sidebarOpen = false"
-                class="lg:hidden ml-auto flex items-center justify-center w-8 h-8 rounded-lg
+                class="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg ml-auto
                        text-stone-400 hover:bg-white/10 hover:text-white transition shrink-0"
                 aria-label="Close sidebar">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,11 +81,10 @@
             </svg>
         </button>
 
-        {{-- Desktop collapse toggle --}}
+        {{-- Desktop collapse toggle — always in flow, never absolute --}}
         <button @click="toggleCollapse()"
                 class="hidden lg:flex shrink-0 items-center justify-center w-7 h-7 rounded-lg
-                       text-stone-400 hover:bg-white/10 hover:text-white transition"
-                :class="collapsed ? 'ml-0' : 'ml-auto'"
+                       text-stone-400 hover:bg-white/10 hover:text-white transition ml-auto"
                 aria-label="Toggle sidebar">
             <svg class="w-4 h-4 transition-transform duration-300" :class="collapsed ? 'rotate-180' : ''"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,5 +405,6 @@
     </footer>
 </div>
 
+@stack('scripts')
 </body>
 </html>

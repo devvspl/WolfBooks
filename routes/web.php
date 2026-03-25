@@ -11,6 +11,7 @@ use App\Http\Controllers\Panel\ProfileController;
 use App\Http\Controllers\Panel\SettingsController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Generated\AirController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -55,6 +56,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/master/page-builder/{page}/fields', [PageFieldController::class, 'index'])->name('master.page-builder.fields');
     Route::post('/master/page-builder/{page}/fields', [PageFieldController::class, 'store'])->name('master.page-builder.fields.store');
     Route::put('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'updateSettings'])->name('master.page-builder.fields.settings');
+    Route::put('/master/page-builder/{page}/fields/{field}/repeater', [PageFieldController::class, 'updateRepeaterColumns'])->name('master.page-builder.fields.repeater');
+    Route::post('/master/page-builder/{page}/fields/reorder', [PageFieldController::class, 'reorder'])->name('master.page-builder.fields.reorder');
     Route::delete('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'destroy'])->name('master.page-builder.fields.destroy');
 
     Route::get('/master/{tab}', [MasterController::class, 'tab'])->name('master.tab');
@@ -73,5 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('global-regions/export', [GlobalRegionController::class, 'export'])->name('global-regions.export');
         Route::get('global-regions/export/{exportLog}/download', [GlobalRegionController::class, 'exportDownload'])->name('global-regions.export.download');
         Route::resource('global-regions', GlobalRegionController::class);
+        Route::get('airs/export', [AirController::class, 'export'])->name('airs.export');
+        Route::get('airs/export/{exportLog}/download', [AirController::class, 'exportDownload'])->name('airs.export.download');
+        Route::resource('airs', AirController::class);
     });
 });

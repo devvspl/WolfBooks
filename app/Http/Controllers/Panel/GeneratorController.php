@@ -41,6 +41,14 @@ class GeneratorController extends Controller
 
     // ── Migration ──────────────────────────────────────────────────────────────
 
+    private function colName($field): string
+    {
+        if ($field->column_name) {
+            return preg_replace('/[^a-z0-9_]/', '', strtolower($field->column_name));
+        }
+        return Str::snake(preg_replace('/[^a-zA-Z0-9\s]/', '', $field->field_name));
+    }
+
     private function createMigration(string $tableName, $fields): void
     {
         $timestamp = now()->format('Y_m_d_His');
@@ -49,7 +57,7 @@ class GeneratorController extends Controller
             // ── Fresh create migration ────────────────────────────────────────
             $cols = '';
             foreach ($fields as $f) {
-                $col   = $f->column_name ?: Str::snake($f->field_name);
+                $col   = $this->colName($f);
                 $cols .= $this->migrationColumn($f, $col);
             }
             $stub = "<?php\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Blueprint;\nuse Illuminate\\Support\\Facades\\Schema;\nreturn new class extends Migration {\n    public function up(): void\n    {\n        if (Schema::hasTable('{$tableName}')) return;\n        Schema::create('{$tableName}', function (Blueprint \$table) {\n            \$table->id();\n{$cols}            \$table->timestamps();\n        });\n    }\n    public function down(): void { Schema::dropIfExists('{$tableName}'); }\n};\n";
@@ -65,12 +73,12 @@ class GeneratorController extends Controller
         // Reserved columns we never touch
         $reserved = ['id', 'created_at', 'updated_at'];
 
-        $fieldCols = $fields->map(fn($f) => $f->column_name ?: Str::snake($f->field_name))->toArray();
+        $fieldCols = $fields->map(fn($f) => $this->colName($f))->toArray();
 
         // Columns to ADD (in fields but not in table)
         $toAdd = [];
         foreach ($fields as $f) {
-            $col = $f->column_name ?: Str::snake($f->field_name);
+            $col = $this->colName($f);
             if (!in_array($col, $existingCols)) {
                 $toAdd[] = ['field' => $f, 'col' => $col];
             }
@@ -128,7 +136,7 @@ class GeneratorController extends Controller
             'datetime'           => "\$table->dateTime('{$col}')",
             'time'               => "\$table->time('{$col}')",
             'rating'             => "\$table->unsignedTinyInteger('{$col}')",
-            'json'               => "\$table->json('{$col}')",
+            'json', 'repeater'   => "\$table->json('{$col}')",
             'content'            => "\$table->text('{$col}')",
             default              => "\$table->string('{$col}'{$len})",
         };
@@ -141,15 +149,15 @@ class GeneratorController extends Controller
     {
         $dir = app_path('Models/Generated');
         if (!is_dir($dir)) mkdir($dir, 0755, true);
-        $fillable = $fields->map(fn($f) => "'" . ($f->column_name ?: Str::snake($f->field_name)) . "'")->implode(', ');
+        $fillable = $fields->map(fn($f) => "'" . ($this->colName($f)) . "'")->implode(', ');
         $casts = '';
         foreach ($fields as $f) {
-            $col  = $f->column_name ?: Str::snake($f->field_name);
+            $col  = $this->colName($f);
             $cast = match($f->field_type) {
                 'toggle', 'checkbox'  => "'boolean'",
                 'number'              => "'integer'",
                 'decimal', 'currency' => "'float'",
-                'json'                => "'array'",
+                'json', 'repeater'    => "'array'",
                 default               => null,
             };
             if ($cast) $casts .= "        '{$col}' => {$cast},\n";
@@ -166,8 +174,8 @@ class GeneratorController extends Controller
         $dir = app_path('Exports/Generated');
         if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-        $headings = $fields->map(fn($f) => "'" . ($f->label ?: Str::headline($f->column_name ?: Str::snake($f->field_name))) . "'")->implode(', ');
-        $cols     = $fields->map(fn($f) => "'" . ($f->column_name ?: Str::snake($f->field_name)) . "'")->implode(', ');
+        $headings = $fields->map(fn($f) => "'" . ($f->label ?: Str::headline($this->colName($f))) . "'")->implode(', ');
+        $cols     = $fields->map(fn($f) => "'" . ($this->colName($f)) . "'")->implode(', ');
 
         $stub = <<<PHP
 <?php
@@ -257,7 +265,7 @@ PHP;
         // store rules (no ignore)
         $storeLines = '';
         foreach ($fields as $f) {
-            $col   = $f->column_name ?: Str::snake($f->field_name);
+            $col   = $this->colName($f);
             $rules = $f->is_required ? ["'required'"] : ["'nullable'"];
             // attach table name for unique rule generation
             $f->table_name = $tableName;
@@ -267,7 +275,7 @@ PHP;
         // update rules (unique ignores current record)
         $updateLines = '';
         foreach ($fields as $f) {
-            $col   = $f->column_name ?: Str::snake($f->field_name);
+            $col   = $this->colName($f);
             $rules = $f->is_required ? ["'required'"] : ["'nullable'"];
             $f->table_name = $tableName;
             $updateLines .= "            '{$col}' => [{$this->fieldValidationRules($f, $rules, $varName . '->id')}],\n";
@@ -289,11 +297,12 @@ PHP;
             'toggle', 'checkbox' => "'boolean'",
             'date', 'datetime'   => "'date'",
             'rating'             => "'integer', 'min:1', 'max:5'",
+            'repeater'           => "'array'",
             default              => "'string'",
         };
         if ($field->column_length) $rules[] = "'max:{$field->column_length}'";
         if ($field->is_unique) {
-            $col       = $field->column_name ?: Str::snake($field->field_name);
+            $col       = $this->colName($field);
             $rules[]   = $ignoreId
                 ? "Rule::unique('{$field->table_name}', '{$col}')->ignore(\${$ignoreId})"
                 : "Rule::unique('{$field->table_name}', '{$col}')";
@@ -312,7 +321,7 @@ PHP;
         $title     = Str::headline($modelName);
         $thCols = $tdCols = '';
         foreach ($fields as $f) {
-            $col    = $f->column_name ?: Str::snake($f->field_name);
+            $col    = $this->colName($f);
             $label  = $f->label ?: Str::headline($col);
             $thCols .= "                <th class=\"px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider\">{$label}</th>\n";
             $tdCols .= "                <td class=\"px-6 py-4 text-stone-700\">{{ \${$varName}->{$col} ?? '—' }}</td>\n";
@@ -337,22 +346,25 @@ PHP;
         $btnText = $isEdit ? "Update Record" : "Create Record";
         $inputs  = '';
         foreach ($fields as $f) {
-            $col         = $f->column_name ?: Str::snake($f->field_name);
+            $col         = $this->colName($f);
             $label       = $f->label ?: Str::headline($col);
             $placeholder = $f->placeholder ?: $label;
             $oldVal      = $isEdit ? "\${$varName}->{$col}" : "old('{$col}')";
             $inputs     .= $this->formInput($f, $col, $label, $placeholder, $oldVal);
         }
+        $hasRepeater = $fields->contains('field_type', 'repeater');
+        $repeaterScript = $hasRepeater ? "\n@push('scripts')\n<script>\ndocument.addEventListener('alpine:init', () => {\n    Alpine.data('repeaterField', (col) => ({\n        addRow() {\n            const tpl = document.getElementById('repeater_' + col + '_tpl');\n            const body = document.getElementById('repeater_' + col + '_body');\n            const clone = tpl.content.cloneNode(true);\n            const idx = body.querySelectorAll('tr').length;\n            clone.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/__IDX__/g, idx); });\n            body.appendChild(clone);\n            window.renumberRepeater(col);\n        }\n    }));\n});\nwindow.renumberRepeater = function(col) {\n    document.querySelectorAll('#repeater_' + col + '_body tr').forEach((tr, i) => {\n        const num = tr.querySelector('.row-num');\n        if (num) num.textContent = i + 1;\n        tr.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/\\[\\d+\\]/g, '[' + i + ']'); });\n    });\n};\n</script>\n@endpush\n" : '';
         $ic = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10";
-        return "@extends('layouts.app')\n@section('content')\n<div class=\"bg-white border border-stone-200 rounded-2xl overflow-hidden\">\n    <div class=\"px-6 py-5 border-b border-stone-100 flex items-center justify-between\">\n        <div>\n            <h3 class=\"text-sm font-semibold text-stone-800\">{$heading}</h3>\n            <p class=\"text-xs text-stone-400 mt-0.5\">{$subtext}</p>\n        </div>\n        <a href=\"{{ route('{$routeBase}.index') }}\" class=\"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors\"><svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"/></svg>Back</a>\n    </div>\n    <form method=\"POST\" action=\"{{ {$action} }}\" enctype=\"multipart/form-data\">\n        @csrf {$method}\n        <div class=\"p-6\">\n            @if(\$errors->any())\n            <div class=\"mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl\">Please fix the errors below.</div>\n            @endif\n            <div class=\"grid grid-cols-1 sm:grid-cols-2 gap-5\">\n{$inputs}            </div>\n        </div>\n        <div class=\"px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-3\">\n            <a href=\"{{ route('{$routeBase}.index') }}\" class=\"px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 bg-white border border-stone-300 hover:bg-stone-50 transition-colors\">Cancel</a>\n            <button type=\"submit\" class=\"inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"/></svg>{$btnText}</button>\n        </div>\n    </form>\n</div>\n@endsection\n";
+        return "@extends('layouts.app')\n@section('content')\n<div class=\"bg-white border border-stone-200 rounded-2xl overflow-hidden\">\n    <div class=\"px-6 py-5 border-b border-stone-100 flex items-center justify-between\">\n        <div>\n            <h3 class=\"text-sm font-semibold text-stone-800\">{$heading}</h3>\n            <p class=\"text-xs text-stone-400 mt-0.5\">{$subtext}</p>\n        </div>\n        <a href=\"{{ route('{$routeBase}.index') }}\" class=\"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors\"><svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"/></svg>Back</a>\n    </div>\n    <form method=\"POST\" action=\"{{ {$action} }}\" enctype=\"multipart/form-data\">\n        @csrf {$method}\n        <div class=\"p-6\">\n            @if(\$errors->any())\n            <div class=\"mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl\">Please fix the errors below.</div>\n            @endif\n            <div class=\"grid grid-cols-3 gap-5\">\n{$inputs}            </div>\n        </div>\n        <div class=\"px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-3\">\n            <a href=\"{{ route('{$routeBase}.index') }}\" class=\"px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 bg-white border border-stone-300 hover:bg-stone-50 transition-colors\">Cancel</a>\n            <button type=\"submit\" class=\"inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"/></svg>{$btnText}</button>\n        </div>\n    </form>\n</div>\n@endsection\n{$repeaterScript}";
     }
 
     private function formInput($field, string $col, string $label, string $placeholder, string $oldVal): string
     {
-        $req = $field->is_required ? ' <span class="text-red-500">*</span>' : '';
-        $ic  = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('{$col}') border-red-400 bg-red-50 @enderror";
-        $err = "                    @error('{$col}')<p class=\"mt-1.5 text-xs text-red-600\">{{ \$message }}</p>@enderror\n";
-        $base = "                <div>\n                    <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}{$req}</label>\n";
+        $req  = $field->is_required ? ' <span class="text-red-500">*</span>' : '';
+        $span = match((int)($field->col_span ?? 1)) { 2 => 'col-span-2', 3 => 'col-span-3', default => 'col-span-1' };
+        $ic   = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('{$col}') border-red-400 bg-red-50 @enderror";
+        $err  = "                    @error('{$col}')<p class=\"mt-1.5 text-xs text-red-600\">{{ \$message }}</p>@enderror\n";
+        $base = "                <div class=\"{$span}\">\n                    <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}{$req}</label>\n";
         $input = match($field->field_type) {
             'content', 'json' =>
                 "                    <textarea name=\"{$col}\" rows=\"4\" placeholder=\"{$placeholder}\" class=\"{$ic} resize-none\">{{ {$oldVal} }}</textarea>\n",
@@ -364,6 +376,7 @@ PHP;
                 "                    <input type=\"color\" name=\"{$col}\" value=\"{{ {$oldVal} ?? '#000000' }}\" class=\"h-10 w-20 rounded-xl border border-stone-300 cursor-pointer\">\n",
             'image', 'file' =>
                 "                    <input type=\"file\" name=\"{$col}\" class=\"w-full text-sm text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-red-800 file:text-white file:text-xs file:font-medium\">\n",
+            'repeater' => $this->repeaterFormInput($field, $col, $label, $oldVal),
             default =>
                 "                    <input type=\"{$this->htmlInputType($field->field_type)}\" name=\"{$col}\" value=\"{{ {$oldVal} }}\" placeholder=\"{$placeholder}\" class=\"{$ic}\">\n",
         };
@@ -381,11 +394,82 @@ PHP;
         };
     }
 
+    private function repeaterFormInput($field, string $col, string $label, string $oldVal): string
+    {
+        $cols = $field->repeater_columns ?? [['key' => 'item', 'label' => 'Item', 'type' => 'text', 'required' => false, 'default' => '']];
+
+        // Build <th> headers
+        $ths = '';
+        foreach ($cols as $c) {
+            $req  = !empty($c['required']) ? ' <span class=\"text-red-500\">*</span>' : '';
+            $ths .= "                        <th class=\"px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider\">{$c['label']}{$req}</th>\n";
+        }
+
+        // Build one template <td> per column (used by JS to clone rows)
+        $tds = '';
+        foreach ($cols as $c) {
+            $inputType = match($c['type'] ?? 'text') {
+                'number', 'decimal' => 'number', 'email' => 'email',
+                'date' => 'date', 'datetime' => 'datetime-local', 'time' => 'time',
+                'checkbox' => 'checkbox', 'select' => 'select', 'textarea' => 'textarea',
+                default => 'text',
+            };
+            $req  = !empty($c['required']) ? 'required' : '';
+            $def  = htmlspecialchars($c['default'] ?? '');
+            $ic   = "w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition";
+            if ($inputType === 'select') {
+                $inp = "<select name=\"{$col}[__IDX__][{$c['key']}]\" {$req} class=\"{$ic}\"><option value=\"\">-- Select --</option></select>";
+            } elseif ($inputType === 'textarea') {
+                $inp = "<textarea name=\"{$col}[__IDX__][{$c['key']}]\" rows=\"2\" {$req} class=\"{$ic} resize-none\">{$def}</textarea>";
+            } elseif ($inputType === 'checkbox') {
+                $inp = "<input type=\"checkbox\" name=\"{$col}[__IDX__][{$c['key']}]\" value=\"1\" class=\"w-4 h-4 rounded border-stone-300 text-red-700\">";
+            } else {
+                $inp = "<input type=\"{$inputType}\" name=\"{$col}[__IDX__][{$c['key']}]\" value=\"{$def}\" {$req} class=\"{$ic}\">";
+            }
+            $tds .= "                        <td class=\"px-2 py-1.5\">{$inp}</td>\n";
+        }
+
+        // Build pre-filled rows for edit mode
+        $editRows = "@if(!empty({$oldVal}))\n                    @foreach({$oldVal} as \$__ri => \$__row)\n                    <tr>\n                        <td class=\"px-3 py-1.5 text-stone-400 text-sm\">{{ \$__ri + 1 }}</td>\n";
+        foreach ($cols as $c) {
+            $editRows .= "                        <td class=\"px-2 py-1.5\"><input type=\"text\" name=\"{$col}[][]\" value=\"{{ \$__row['{$c['key']}'] ?? '' }}\" class=\"w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 transition\"></td>\n";
+        }
+        $editRows .= "                        <td class=\"px-2 py-1.5 text-center\"><button type=\"button\" onclick=\"this.closest('tr').remove()\" class=\"w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold\">−</button></td>\n                    </tr>\n                    @endforeach\n                    @endif\n";
+
+        return <<<HTML
+                    <div x-data="repeaterField('{$col}')" class="border border-stone-200 rounded-xl overflow-hidden">
+                        <table class="w-full text-sm" id="repeater_{$col}">
+                            <thead class="bg-stone-800 text-white">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold w-8">#</th>
+{$ths}                                    <th class="px-3 py-2 w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="repeater_{$col}_body">
+{$editRows}                            </tbody>
+                        </table>
+                        <div class="px-3 py-2 bg-stone-50 border-t border-stone-100">
+                            <button type="button" @click="addRow()"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                Add Row
+                            </button>
+                        </div>
+                    </div>
+                    <template id="repeater_{$col}_tpl">
+                        <tr>
+                            <td class="px-3 py-1.5 text-stone-400 text-sm row-num"></td>
+{$tds}                            <td class="px-2 py-1.5 text-center"><button type="button" onclick="this.closest('tr').remove(); window.renumberRepeater('{$col}')" class="w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold">−</button></td>
+                        </tr>
+                    </template>
+HTML;
+    }
+
     private function showView(string $title, string $routeBase, string $varName, $fields): string
     {
         $inputs = '';
         foreach ($fields as $f) {
-            $col   = $f->column_name ?: Str::snake($f->field_name);
+            $col   = $this->colName($f);
             $label = $f->label ?: Str::headline($col);
             $inputs .= "            <div>\n                <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}</label>\n                <input type=\"text\" disabled value=\"{{ \${$varName}->{$col} ?? '—' }}\" class=\"w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed\">\n            </div>\n";
         }
@@ -398,6 +482,8 @@ PHP;
     {
         $routesFile   = base_path('routes/web.php');
         $content      = file_get_contents($routesFile);
+
+        // Add use statement if missing
         $useStatement = "use App\\Http\\Controllers\\Generated\\{$modelName}Controller;";
         if (!str_contains($content, $useStatement)) {
             $content = str_replace(
@@ -406,23 +492,41 @@ PHP;
                 $content
             );
         }
-        $resourceLine = "        Route::get('{$routeSlug}/export', [{$modelName}Controller::class, 'export'])->name('{$routeSlug}.export');\n        Route::get('{$routeSlug}/export/{exportLog}/download', [{$modelName}Controller::class, 'exportDownload'])->name('{$routeSlug}.export.download');\n        Route::resource('{$routeSlug}', {$modelName}Controller::class);";
-        if (!str_contains($content, $resourceLine)) {
+
+        $resourceLine = "        Route::get('{$routeSlug}/export', [{$modelName}Controller::class, 'export'])->name('{$routeSlug}.export');\n"
+                      . "        Route::get('{$routeSlug}/export/{exportLog}/download', [{$modelName}Controller::class, 'exportDownload'])->name('{$routeSlug}.export.download');\n"
+                      . "        Route::resource('{$routeSlug}', {$modelName}Controller::class);\n";
+
+        if (!str_contains($content, "Route::resource('{$routeSlug}'")) {
             if (str_contains($content, "Route::prefix('generated')")) {
-                $content = preg_replace(
-                    "/(Route::prefix\('generated'\)[^\{]*\{[^\}]*)(}\);)/s",
-                    "$1    {$resourceLine}\n    $2",
-                    $content
-                );
+                // Find the generated group closing marker and insert before it
+                $marker = "    });\n});\n";
+                $altMarker = "    });\n";
+                // Use a fixed anchor: the last occurrence of the closing of the generated group
+                // We look for the line "    });" that closes the prefix group, just before the outer "});"
+                $insertBefore = "    });\n});";
+                if (str_contains($content, $insertBefore)) {
+                    $content = str_replace(
+                        $insertBefore,
+                        "{$resourceLine}{$insertBefore}",
+                        $content
+                    );
+                } else {
+                    // Fallback: append before the last }); in the file
+                    $pos = strrpos($content, "    });\n");
+                    if ($pos !== false) {
+                        $content = substr($content, 0, $pos) . $resourceLine . substr($content, $pos);
+                    }
+                }
             } else {
-                $group = "\n    // Generated CRUD routes\n    Route::prefix('generated')->name('generated.')->group(function () {\n        // {$modelName}\n        {$resourceLine}\n    });\n";
-                $content = str_replace(
-                    "    // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────\n});",
-                    "    // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────\n{$group}});",
-                    $content
-                );
+                $group = "\n    // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────\n"
+                       . "    Route::prefix('generated')->name('generated.')->group(function () {\n"
+                       . $resourceLine
+                       . "    });\n";
+                $content = str_replace("\n});\n", "\n{$group}\n});\n", $content);
             }
         }
+
         file_put_contents($routesFile, $content);
     }
 }
