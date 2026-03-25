@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Generated\GlobalRegionController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\GeneratorController;
 use App\Http\Controllers\Panel\MasterController;
@@ -69,5 +70,8 @@ Route::middleware('auth')->group(function () {
 
     // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────
     Route::prefix('generated')->name('generated.')->group(function () {
+        Route::get('global-regions/export', [GlobalRegionController::class, 'export'])->name('global-regions.export');
+        Route::get('global-regions/export/{exportLog}/download', [GlobalRegionController::class, 'exportDownload'])->name('global-regions.export.download');
+        Route::resource('global-regions', GlobalRegionController::class);
     });
 });
