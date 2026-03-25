@@ -124,6 +124,12 @@ class PageBuilderController extends Controller
             @rmdir($viewFolder);
         }
 
+        // Delete migration files (create + alter) for this table
+        $tableName = 'gen_' . \Illuminate\Support\Str::snake(\Illuminate\Support\Str::plural($pageName));
+        foreach (glob(database_path("migrations/*_{$tableName}_table.php")) as $file) {
+            @unlink($file);
+        }
+
         // Remove routes from web.php
         $routesFile = base_path('routes/web.php');
         $content    = file_get_contents($routesFile);
