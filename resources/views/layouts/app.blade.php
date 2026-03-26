@@ -9,320 +9,590 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+    <style>
+      
+
+        /* ── Icon Rail ── */
+        #icon-rail {
+            position: fixed;
+            top: 0; left: 0;
+            width: 72px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #1c1917 0%, #3d0808 55%, #111110 100%);
+            border-right: 1px solid rgba(255,255,255,.06);
+            z-index: 40;
+            transition: transform .22s cubic-bezier(.4,0,.2,1);
+        }
+        @media (max-width: 1023px) {
+            #icon-rail { transform: translateX(-100%); }
+            #icon-rail.mob-open { transform: translateX(0); }
+        }
+
+        .rail-brand {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            flex-shrink: 0;
+        }
+        .rail-logo {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #991b1b, #7f1d1d);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 2px 8px rgba(0,0,0,.4);
+        }
+        .rail-logo svg { width: 18px; height: 18px; color: #fca5a5; }
+
+        .rail-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 6px 0;
+            scrollbar-width: none;
+        }
+        .rail-nav::-webkit-scrollbar { display: none; }
+
+        /* Icon tile */
+        .rail-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            width: 72px;
+            min-height: 58px;
+            padding: 8px 4px;
+            cursor: pointer;
+            position: relative;
+            border: none;
+            background: none;
+            color: rgba(255,255,255,.42);
+            text-decoration: none;
+            transition: background .14s, color .14s;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .rail-tile:hover {
+            background: rgba(255,255,255,.07);
+            color: rgba(255,255,255,.82);
+        }
+        .rail-tile.active {
+            background: rgba(185,28,28,.32);
+            color: #fca5a5;
+        }
+        /* Left accent bar */
+        .rail-tile.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 3px; height: 26px;
+            background: #f87171;
+            border-radius: 0 3px 3px 0;
+        }
+        .rail-tile svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .rail-tile-label {
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: .015em;
+            text-align: center;
+            line-height: 1.15;
+            max-width: 62px;
+        }
+        .rail-badge {
+            position: absolute;
+            top: 7px; right: 7px;
+            min-width: 15px; height: 15px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 8.5px; font-weight: 700;
+            border-radius: 99px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 3px;
+            border: 1.5px solid #1c1917;
+        }
+
+        /* Bottom user tile */
+        .rail-user {
+            flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,.08);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* ── Submenu Panel ── */
+        #submenu-panel {
+            position: fixed;
+            top: 0;
+            left: 72px;
+            width: 0;
+            height: 100vh;
+            background: #211e1c;
+            border-right: 1px solid rgba(255,255,255,.08);
+            z-index: 39;
+            overflow: hidden;
+            transition: width .22s cubic-bezier(.4,0,.2,1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 6px 0 32px rgba(0,0,0,.45);
+        }
+        #submenu-panel.open { width: 192px; }
+
+        .sub-head {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 14px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            flex-shrink: 0;
+        }
+        .sub-head-icon {
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(220,38,38,.28);
+            border-radius: 7px;
+            flex-shrink: 0;
+        }
+        .sub-head-icon svg { width: 15px; height: 15px; color: #fca5a5; }
+        .sub-head-title {
+            font-size: 11px; font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            white-space: nowrap;
+        }
+
+        .sub-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 0 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,.08) transparent;
+        }
+        .sub-body::-webkit-scrollbar { width: 3px; }
+        .sub-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+        .sub-section-label {
+            font-size: 9px; font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.2);
+            padding: 12px 14px 3px;
+            white-space: nowrap;
+        }
+        .sub-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 33px;
+            padding: 0 14px;
+            font-size: 12.5px; font-weight: 500;
+            color: rgba(255,255,255,.48);
+            white-space: nowrap;
+            text-decoration: none;
+            transition: background .12s, color .12s;
+        }
+        .sub-link:hover {
+            background: rgba(255,255,255,.06);
+            color: rgba(255,255,255,.88);
+        }
+        .sub-link.active {
+            color: #fca5a5;
+            background: rgba(185,28,28,.2);
+        }
+        .sub-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+            opacity: .55;
+        }
+        .sub-link.active .sub-dot { opacity: 1; }
+
+        /* Overlay to close submenu on outside click */
+        #sub-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 38;
+        }
+        #sub-overlay.on { display: block; }
+
+        /* Mobile backdrop */
+        #mob-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            backdrop-filter: blur(3px);
+            z-index: 35;
+        }
+
+        /* ── Main wrapper ── */
+        #main-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin-left: 72px;
+            transition: margin-left .22s cubic-bezier(.4,0,.2,1);
+        }
+        #main-wrap.shifted { margin-left: 264px; /* 72+192 */ }
+        @media (max-width: 1023px) {
+            #main-wrap, #main-wrap.shifted { margin-left: 0 !important; }
+        }
+
+        /* ── Topbar ── */
+        #topbar {
+            position: sticky; top: 0; z-index: 20;
+            height: 56px;
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e7e5e4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        }
+    </style>
 </head>
 
 <body class="h-full font-sans antialiased bg-stone-100 text-stone-900"
-      x-data="{
-          sidebarOpen: false,
-          mobileSearch: false,
-          collapsed: window.innerWidth >= 1024 && localStorage.getItem('sidebarCollapsed') === 'true',
-          notifOpen: false,
-          toggleCollapse() {
-              this.collapsed = !this.collapsed;
-              localStorage.setItem('sidebarCollapsed', this.collapsed);
-          },
-          init() {
-              window.addEventListener('resize', () => {
-                  if (window.innerWidth < 1024) {
-                      this.sidebarOpen = false;
-                      this.collapsed = false;
-                  }
-              });
-          }
-      }">
+      x-data="layoutApp()" x-init="init()">
 
-{{-- ── Mobile overlay ── --}}
-<div x-show="sidebarOpen"
+{{-- Mobile backdrop --}}
+<div id="mob-backdrop"
+     x-show="mobileOpen"
+     @click="closeAll()"
      x-transition:enter="transition-opacity duration-200"
-     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-     x-transition:leave="transition-opacity duration-200"
-     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-     class="sidebar-overlay" @click="sidebarOpen = false"></div>
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     style="display:none"></div>
 
-{{-- ══════════════════════════════════════════════════════
-     SIDEBAR
-══════════════════════════════════════════════════════ --}}
-<aside :class="[
-           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-           collapsed ? 'lg:w-[68px]' : 'lg:w-[260px]'
-       ]"
-       class="fixed top-0 left-0 z-30 h-full w-[260px] flex flex-col
-              bg-gradient-to-b from-stone-900 via-red-950 to-stone-950
-              border-r border-white/5 shadow-2xl
-              transition-all duration-300 ease-in-out">
+{{-- Submenu outside-click overlay --}}
+<div id="sub-overlay" @click="closeSubmenu()"></div>
+
+{{-- ═══════════════════════════════════
+     ICON RAIL
+═══════════════════════════════════ --}}
+<aside id="icon-rail" :class="mobileOpen ? 'mob-open' : ''" role="navigation" aria-label="Main navigation">
 
     {{-- Brand --}}
-    <div class="flex items-center border-b border-white/10 shrink-0 h-16 px-3 gap-2 overflow-hidden">
-
-        {{-- Logo icon — click to re-expand when collapsed --}}
-        <div @click="if(collapsed) toggleCollapse()"
-             class="flex items-center justify-center w-9 h-9 shrink-0 bg-white/10 rounded-xl border border-white/10 shadow"
-             :class="collapsed ? 'cursor-pointer hover:bg-white/20 transition' : ''">
-            <svg class="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="rail-brand">
+        <div class="rail-logo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
         </div>
-
-        {{-- Brand text — hidden when collapsed --}}
-        <div class="leading-tight min-w-0 flex-1 transition-all duration-300 overflow-hidden"
-             :class="collapsed ? 'w-0 max-w-0 opacity-0 pointer-events-none' : 'opacity-100'">
-            <span class="text-white font-bold text-base tracking-tight whitespace-nowrap">WolfBooks</span>
-            <p class="text-stone-400 text-[10px] font-medium uppercase tracking-widest whitespace-nowrap">Accounting</p>
-        </div>
-
-        {{-- Mobile close (only visible on mobile, no collapse state needed) --}}
-        <button @click="sidebarOpen = false"
-                class="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg ml-auto
-                       text-stone-400 hover:bg-white/10 hover:text-white transition shrink-0"
-                aria-label="Close sidebar">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
-
-        {{-- Desktop collapse toggle — always in flow, never absolute --}}
-        <button @click="toggleCollapse()"
-                class="hidden lg:flex shrink-0 items-center justify-center w-7 h-7 rounded-lg
-                       text-stone-400 hover:bg-white/10 hover:text-white transition ml-auto"
-                aria-label="Toggle sidebar">
-            <svg class="w-4 h-4 transition-transform duration-300" :class="collapsed ? 'rotate-180' : ''"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-            </svg>
-        </button>
     </div>
 
-    {{-- Nav --}}
-    <nav class="flex-1 overflow-y-auto overflow-x-hidden sidebar-scroll py-3 px-2 space-y-0.5"
-         role="navigation" aria-label="Main navigation">
+    {{-- Nav tiles --}}
+    <div class="rail-nav">
 
-        @php
-        $navSections = [
-            'Main' => [
-                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6'],
-                ['label' => 'Master',    'route' => 'master',    'icon' => 'M4 6h16M4 10h16M4 14h16M4 18h16'],
+    @php
+    $railItems = [
+        [
+            'id'    => 'home',
+            'label' => 'Home',
+            'route' => 'dashboard',
+            'icon'  => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+        ],
+        [
+            'id'    => 'master',
+            'label' => 'Master',
+            'route' => 'master',
+            'icon'  => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+            'children' => [
+                ['section' => 'Accounts'],
+                ['label' => 'Chart of Accounts', 'route' => 'master.accounts'],
+                ['label' => 'Account Groups',    'route' => 'master.account-groups'],
+                ['section' => 'Parties'],
+                ['label' => 'Customers',          'route' => 'master.customers'],
+                ['label' => 'Vendors',            'route' => 'master.vendors'],
+                ['section' => 'Items'],
+                ['label' => 'Products',           'route' => 'master.products'],
+                ['label' => 'Item Groups',        'route' => 'master.item-groups'],
+                ['label' => 'Units of Measure',   'route' => 'master.units'],
+                ['section' => 'Tax'],
+                ['label' => 'Tax Rates',          'route' => 'master.taxes'],
+                ['label' => 'HSN / SAC Codes',    'route' => 'master.hsn'],
             ],
-        ];
-        @endphp
+        ],
+        [
+            'id'    => 'sales',
+            'label' => 'Sales',
+            'route' => 'sales',
+            'icon'  => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z',
+            'badge' => '4',
+            'children' => [
+                ['section' => 'Invoicing'],
+                ['label' => 'Sales Invoices',  'route' => 'sales.invoices'],
+                ['label' => 'Proforma',         'route' => 'sales.proforma'],
+                ['label' => 'Delivery Notes',   'route' => 'sales.delivery'],
+                ['section' => 'Returns'],
+                ['label' => 'Credit Notes',     'route' => 'sales.credit-notes'],
+                ['section' => 'Collections'],
+                ['label' => 'Receipts',         'route' => 'sales.receipts'],
+                ['label' => 'Advance Receipts', 'route' => 'sales.advance'],
+                ['section' => 'Reports'],
+                ['label' => 'Sales Register',   'route' => 'sales.register'],
+                ['label' => 'Outstanding',      'route' => 'sales.outstanding'],
+            ],
+        ],
+        [
+            'id'    => 'purchases',
+            'label' => 'Purchase',
+            'route' => 'purchases',
+            'icon'  => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+            'children' => [
+                ['section' => 'Procurement'],
+                ['label' => 'Purchase Orders',  'route' => 'purchases.orders'],
+                ['label' => 'GRN',              'route' => 'purchases.grn'],
+                ['label' => 'Bills',            'route' => 'purchases.bills'],
+                ['section' => 'Returns'],
+                ['label' => 'Debit Notes',      'route' => 'purchases.debit-notes'],
+                ['section' => 'Payments'],
+                ['label' => 'Payments',         'route' => 'purchases.payments'],
+                ['label' => 'Advance Payments', 'route' => 'purchases.advance'],
+            ],
+        ],
+        [
+            'id'    => 'journal',
+            'label' => 'Journal',
+            'route' => 'journal',
+            'icon'  => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+            'children' => [
+                ['section' => 'Entries'],
+                ['label' => 'Journal Voucher',  'route' => 'journal.entries'],
+                ['label' => 'Contra',           'route' => 'journal.contra'],
+                ['section' => 'Banking'],
+                ['label' => 'Bank Receipts',    'route' => 'journal.bank-receipts'],
+                ['label' => 'Bank Payments',    'route' => 'journal.bank-payments'],
+                ['label' => 'Reconciliation',   'route' => 'journal.recon'],
+            ],
+        ],
+        [
+            'id'    => 'inventory',
+            'label' => 'Inventory',
+            'route' => 'inventory',
+            'icon'  => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+            'children' => [
+                ['section' => 'Stock'],
+                ['label' => 'Stock Summary',    'route' => 'inventory.summary'],
+                ['label' => 'Stock Transfer',   'route' => 'inventory.transfer'],
+                ['label' => 'Adjustments',      'route' => 'inventory.adjustments'],
+                ['section' => 'Valuation'],
+                ['label' => 'Stock Ledger',     'route' => 'inventory.ledger'],
+                ['label' => 'Ageing Report',    'route' => 'inventory.ageing'],
+            ],
+        ],
+        [
+            'id'    => 'reports',
+            'label' => 'Reports',
+            'route' => 'reports',
+            'icon'  => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+            'children' => [
+                ['section' => 'Financials'],
+                ['label' => 'Profit & Loss',    'route' => 'reports.pl'],
+                ['label' => 'Balance Sheet',    'route' => 'reports.balance-sheet'],
+                ['label' => 'Cash Flow',        'route' => 'reports.cash-flow'],
+                ['section' => 'Ledgers'],
+                ['label' => 'Trial Balance',    'route' => 'reports.trial-balance'],
+                ['label' => 'General Ledger',   'route' => 'reports.ledger'],
+                ['label' => 'Day Book',         'route' => 'reports.daybook'],
+                ['section' => 'GST'],
+                ['label' => 'GSTR-1',           'route' => 'reports.gstr1'],
+                ['label' => 'GSTR-2A',          'route' => 'reports.gstr2a'],
+                ['label' => 'GSTR-3B',          'route' => 'reports.gstr3b'],
+            ],
+        ],
+        [
+            'id'    => 'settings',
+            'label' => 'Settings',
+            'route' => 'settings',
+            'icon'  => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+            'children' => [
+                ['section' => 'General'],
+                ['label' => 'Company Info',     'route' => 'settings.company'],
+                ['label' => 'Financial Year',   'route' => 'settings.fy'],
+                ['label' => 'Numbering',        'route' => 'settings.numbering'],
+                ['section' => 'Users & Access'],
+                ['label' => 'Users',            'route' => 'settings.users'],
+                ['label' => 'Roles',            'route' => 'settings.roles'],
+                ['label' => 'Permissions',      'route' => 'settings.permissions'],
+            ],
+        ],
+    ];
+    @endphp
 
-        @foreach($navSections as $section => $items)
-            @if(count($items) > 0)
-            {{-- Section label --}}
-            <div class="overflow-hidden transition-all duration-300"
-                 :class="collapsed ? 'max-h-0 opacity-0 my-0 py-0' : 'max-h-8 opacity-100 mt-4 mb-1'">
-                <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-stone-500 whitespace-nowrap">
-                    {{ $section }}
-                </p>
+    @foreach($railItems as $item)
+    @php
+        $isActive    = Request::routeIs($item['route']);
+        $hasChildren = !empty($item['children']);
+    @endphp
+
+    @if($hasChildren)
+    <button type="button"
+            class="rail-tile {{ $isActive ? 'active' : '' }}"
+            data-id="{{ $item['id'] }}"
+            @click="toggleSubmenu('{{ $item['id'] }}', '{{ addslashes($item['icon']) }}', '{{ $item['label'] }}')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $item['icon'] }}"/>
+        </svg>
+        <span class="rail-tile-label">{{ $item['label'] }}</span>
+        @if(!empty($item['badge']))
+        <span class="rail-badge">{{ $item['badge'] }}</span>
+        @endif
+    </button>
+    @else
+    <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+       class="rail-tile {{ $isActive ? 'active' : '' }}"
+       data-id="{{ $item['id'] }}"
+       @click="closeSubmenu(); if(window.innerWidth < 1024) mobileOpen = false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $item['icon'] }}"/>
+        </svg>
+        <span class="rail-tile-label">{{ $item['label'] }}</span>
+    </a>
+    @endif
+    @endforeach
+
+    </div>
+
+    {{-- User avatar --}}
+    <div class="rail-user" x-data="{ open: false }">
+        <button @click="open = !open" class="relative flex items-center justify-center w-9 h-9">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=7f1d1d&color=fca5a5&size=80"
+                 alt="Avatar" class="w-9 h-9 rounded-full border-2 border-white/20">
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-stone-900 rounded-full"></span>
+        </button>
+
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             @click.outside="open=false"
+             class="absolute bottom-16 left-2 w-52 bg-stone-800 border border-white/10
+                    rounded-xl shadow-2xl overflow-hidden z-[100]">
+            <div class="px-4 py-3 border-b border-white/10 bg-white/5">
+                <p class="text-sm font-semibold text-stone-100 truncate">{{ auth()->user()->name ?? 'Admin User' }}</p>
+                <p class="text-xs text-stone-400 truncate mt-0.5">{{ auth()->user()->email ?? 'admin@wolfbooks.com' }}</p>
             </div>
-            <div x-show="collapsed" class="my-1 mx-2 border-t border-white/10"></div>
-
-            @foreach($items as $item)
-            @php $isActive = Request::routeIs($item['route']); @endphp
-            <div class="relative group/tip">
-                <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-                   class="nav-item {{ $isActive ? 'active' : '' }} relative"
-                   :class="collapsed ? 'justify-center !px-0' : ''"
-                   @click="if(window.innerWidth < 1024) sidebarOpen = false">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $item['icon'] }}"/>
-                    </svg>
-                    <span class="transition-all duration-300 whitespace-nowrap overflow-hidden flex-1"
-                          :class="collapsed ? 'w-0 opacity-0 max-w-0' : 'opacity-100'">
-                        {{ $item['label'] }}
-                    </span>
-                    @if(!empty($item['badge']))
-                    <span x-show="!collapsed"
-                          class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5
-                                 text-[11px] font-bold bg-red-500 text-white rounded-full leading-none">
-                        {{ $item['badge'] }}
-                    </span>
-                    <span x-show="collapsed"
-                          class="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center
-                                 bg-red-500 text-white text-[9px] font-bold rounded-full leading-none">
-                        {{ $item['badge'] }}
-                    </span>
-                    @endif
-                </a>
-                {{-- Tooltip (desktop collapsed only) --}}
-                <div x-show="collapsed"
-                     class="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 z-[60]
-                            hidden lg:flex items-center gap-1
-                            opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
-                    <div class="w-2 h-2 bg-stone-700 rotate-45 -mr-1 shrink-0"></div>
-                    <div class="bg-stone-700 text-stone-100 text-xs font-medium px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap">
-                        {{ $item['label'] }}
-                        @if(!empty($item['badge']))
-                            <span class="ml-1.5 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold">{{ $item['badge'] }}</span>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            @endforeach
-            @endif
-        @endforeach
-    </nav>
-
-    {{-- User card --}}
-    <div class="shrink-0 border-t border-white/10 transition-all duration-300"
-         :class="collapsed ? 'px-1 py-3' : 'px-2 py-3'">
-        <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open"
-                    class="w-full flex items-center gap-3 rounded-xl
-                           hover:bg-white/5 transition-all duration-150 text-left min-h-[44px]"
-                    :class="collapsed ? 'justify-center px-0 py-2' : 'px-2 py-2'"
-                    aria-label="User menu">
-                <div class="relative shrink-0">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin User') }}&background=7f1d1d&color=fca5a5&size=80"
-                         alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white/20">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-stone-900 rounded-full"></span>
-                </div>
-                <div class="min-w-0 transition-all duration-300 overflow-hidden"
-                     :class="collapsed ? 'w-0 max-w-0 opacity-0 pointer-events-none' : 'flex-1 opacity-100'">
-                    <p class="text-sm font-semibold text-stone-100 truncate leading-tight">{{ auth()->user()->name ?? 'Admin User' }}</p>
-                    <p class="text-xs text-stone-500 truncate leading-tight mt-0.5">{{ auth()->user()->email ?? 'admin@wolfbooks.com' }}</p>
-                </div>
-                <svg class="w-4 h-4 text-stone-500 shrink-0 transition-transform duration-200"
-                     :class="[open ? 'rotate-180' : '', collapsed ? '!hidden' : '']"
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-100"
-                 x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                 @click.outside="open = false"
-                 :class="collapsed ? 'left-full bottom-0 ml-3 w-52 origin-bottom-left' : 'bottom-full left-0 right-0 mb-2 origin-bottom'"
-                 class="absolute bg-stone-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]">
-                <div class="px-4 py-3 border-b border-white/10 bg-white/5">
-                    <p class="text-sm font-semibold text-stone-100 truncate">{{ auth()->user()->name ?? 'Admin User' }}</p>
-                    <p class="text-xs text-stone-400 truncate mt-0.5">{{ auth()->user()->email ?? 'admin@wolfbooks.com' }}</p>
-                </div>
-                <a href="{{ route('profile') }}" class="flex items-center gap-2.5 px-4 py-3 text-sm text-stone-300 hover:bg-white/5 hover:text-white transition-colors">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                    Profile
-                </a>
-                <a href="{{ route('settings') }}" class="flex items-center gap-2.5 px-4 py-3 text-sm text-stone-300 hover:bg-white/5 hover:text-white transition-colors">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    Settings
-                </a>
-                <div class="border-t border-white/10"></div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-950/50 hover:text-red-300 transition-colors text-left">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        Sign out
-                    </button>
-                </form>
-            </div>
+            <a href="{{ route('profile') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-300 hover:bg-white/5 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Profile
+            </a>
+            <a href="{{ route('settings') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-300 hover:bg-white/5 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Settings
+            </a>
+            <div class="border-t border-white/10"></div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-950/50 hover:text-red-300 transition-colors text-left">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Sign out
+                </button>
+            </form>
         </div>
     </div>
 </aside>
 
-{{-- ══════════════════════════════════════════════════════
+{{-- ═══════════════════════════════════
+     SUBMENU PANEL
+═══════════════════════════════════ --}}
+<div id="submenu-panel" :class="subOpen ? 'open' : ''">
+    <div class="sub-head">
+        <div class="sub-head-icon">
+            <svg id="sub-hd-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path id="sub-hd-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d=""/>
+            </svg>
+        </div>
+        <span id="sub-hd-title" class="sub-head-title"></span>
+    </div>
+    <div id="sub-body" class="sub-body"></div>
+</div>
+
+{{-- ═══════════════════════════════════
      MAIN CONTENT
-══════════════════════════════════════════════════════ --}}
-<div class="flex flex-col min-h-screen transition-all duration-300"
-     :class="collapsed ? 'lg:pl-[68px]' : 'lg:pl-[260px]'">
+═══════════════════════════════════ --}}
+<div id="main-wrap" :class="subOpen ? 'shifted' : ''">
 
-    {{-- ── TOP BAR ── --}}
-    <header class="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-md border-b border-stone-200
-                   flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 shadow-sm">
+    {{-- TOPBAR --}}
+    <header id="topbar" x-data="{ mobileSearch: false }">
 
-        {{-- Hamburger (mobile) --}}
-        <button @click="sidebarOpen = true"
-                class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg
-                       text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition shrink-0"
-                aria-label="Open menu">
+        <button @click="mobileOpen=true"
+                class="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg
+                       text-stone-500 hover:bg-stone-100 transition shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
 
-        {{-- Page title — hidden when mobile search is open --}}
-        <div class="flex-1 min-w-0 transition-all duration-200"
-             :class="mobileSearch ? 'hidden' : 'block'">
-            <h1 class="text-sm sm:text-base font-semibold text-stone-800 truncate">
-                @yield('page-title', 'Dashboard')
-            </h1>
+        <div class="flex-1 min-w-0" :class="mobileSearch ? 'hidden' : 'block'">
+            <h1 class="text-sm font-semibold text-stone-800 truncate">@yield('page-title', 'Dashboard')</h1>
             @hasSection('breadcrumb')
-                <nav class="hidden sm:flex items-center gap-1 text-xs text-stone-400 mt-0.5">
-                    @yield('breadcrumb')
-                </nav>
+            <nav class="hidden sm:flex items-center gap-1 text-xs text-stone-400 mt-0.5">@yield('breadcrumb')</nav>
             @endif
         </div>
 
-        {{-- Mobile search bar (expands inline) --}}
         <div x-show="mobileSearch"
-             x-transition:enter="transition duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             class="flex-1 flex items-center gap-2 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 md:hidden">
+             class="flex-1 flex items-center gap-2 bg-stone-100 border border-stone-200 rounded-lg px-3 py-1.5 md:hidden">
             <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <input type="text" placeholder="Search…" autofocus
-                   class="bg-transparent flex-1 text-sm text-stone-700 placeholder-stone-400 outline-none border-none p-0">
-            <button @click="mobileSearch = false" class="text-stone-400 hover:text-stone-600 transition shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <input type="text" placeholder="Search…" autofocus class="bg-transparent flex-1 text-sm outline-none border-none p-0 placeholder-stone-400">
+            <button @click="mobileSearch=false"><svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
 
-        {{-- Right actions --}}
-        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-
-            {{-- Desktop search --}}
-            <div class="hidden md:flex items-center gap-2 bg-stone-100 border border-stone-200
-                        rounded-lg px-3 py-1.5 w-48 lg:w-56 xl:w-72">
+        <div class="flex items-center gap-1.5 shrink-0">
+            <div class="hidden md:flex items-center gap-2 bg-stone-100 border border-stone-200 rounded-lg px-3 py-1.5 w-52 xl:w-72">
                 <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" placeholder="Search invoices, clients…"
-                       class="bg-transparent flex-1 text-sm text-stone-700 placeholder-stone-400 outline-none border-none p-0 focus:ring-0">
+                <input type="text" placeholder="Search invoices, clients…" class="bg-transparent flex-1 text-sm text-stone-700 placeholder-stone-400 outline-none border-none p-0">
                 <span class="text-[10px] text-stone-400 font-mono bg-stone-200 px-1.5 py-0.5 rounded hidden xl:inline">⌘K</span>
             </div>
 
-            {{-- Mobile search toggle --}}
-            <button @click="mobileSearch = true"
-                    x-show="!mobileSearch"
-                    class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg
-                           text-stone-500 hover:bg-stone-100 transition"
-                    aria-label="Search">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
+            <button @click="mobileSearch=true" x-show="!mobileSearch"
+                    class="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </button>
 
             {{-- Notifications --}}
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open"
-                        class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg
-                               text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition"
-                        aria-label="Notifications">
+                <button @click="open=!open"
+                        class="relative w-9 h-9 flex items-center justify-center rounded-lg
+                               text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
                     <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
-
                 <div x-show="open"
                      x-transition:enter="transition ease-out duration-150"
                      x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                      x-transition:leave="transition ease-in duration-100"
                      x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                     @click.outside="open = false"
+                     @click.outside="open=false"
                      class="absolute right-0 mt-2 w-[min(320px,calc(100vw-1.5rem))] bg-white border border-stone-200
                             rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
@@ -335,10 +605,10 @@
                             ['Payment received from Acme Ltd', '₹48,000 credited', 'green'],
                             ['New vendor added', 'TechSupply Co. onboarded', 'blue'],
                         ] as $notif)
-                        <div class="flex gap-3 px-4 py-3 hover:bg-stone-50 transition-colors cursor-pointer">
-                            <div class="mt-1.5 w-2 h-2 rounded-full bg-{{ $notif[2] }}-500 shrink-0"></div>
-                            <div class="min-w-0">
-                                <p class="text-sm font-medium text-stone-800 truncate">{{ $notif[0] }}</p>
+                        <div class="flex gap-3 px-4 py-3 hover:bg-stone-50 cursor-pointer transition-colors">
+                            <div class="mt-2 w-2 h-2 rounded-full bg-{{ $notif[2] }}-500 shrink-0"></div>
+                            <div>
+                                <p class="text-sm font-medium text-stone-800">{{ $notif[0] }}</p>
                                 <p class="text-xs text-stone-400 mt-0.5">{{ $notif[1] }}</p>
                             </div>
                         </div>
@@ -350,61 +620,148 @@
                 </div>
             </div>
 
-            {{-- Avatar (mobile) --}}
             <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=7f1d1d&color=fca5a5&size=80"
                  alt="Avatar"
                  class="lg:hidden w-8 h-8 rounded-full border-2 border-stone-200 cursor-pointer shrink-0">
         </div>
     </header>
 
-    {{-- ── PAGE CONTENT ── --}}
-    <main class="flex-1 p-3 sm:p-4 md:p-6 xl:p-8">
+    {{-- PAGE CONTENT --}}
+    <main class="flex-1 p-4 md:p-6 xl:p-8">
 
         @if(session('success'))
         <div x-data="{ show: true }" x-show="show" x-transition
-             class="mb-4 sm:mb-6 flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
-            <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+             class="mb-5 flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
+            <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <p class="flex-1">{{ session('success') }}</p>
-            <button @click="show = false" class="text-green-600 hover:text-green-800 shrink-0 p-0.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <button @click="show=false"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
         @endif
 
         @if(session('error'))
         <div x-data="{ show: true }" x-show="show" x-transition
-             class="mb-4 sm:mb-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
-            <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+             class="mb-5 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
+            <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <p class="flex-1">{{ session('error') }}</p>
-            <button @click="show = false" class="text-red-600 hover:text-red-800 shrink-0 p-0.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <button @click="show=false"><svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
         @endif
 
         @yield('content')
     </main>
 
-    {{-- ── FOOTER ── --}}
-    <footer class="shrink-0 px-4 sm:px-6 py-4 border-t border-stone-200
+    {{-- FOOTER --}}
+    <footer class="shrink-0 px-6 py-4 border-t border-stone-200
                    flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-400">
         <span>© {{ date('Y') }} WolfBooks Accounting. All rights reserved.</span>
-        <div class="flex items-center gap-4 sm:gap-6">
-            <a href="#" class="hover:text-stone-600 transition-colors py-1">Privacy</a>
-            <a href="#" class="hover:text-stone-600 transition-colors py-1">Terms</a>
-            <a href="#" class="hover:text-stone-600 transition-colors py-1">Help</a>
+        <div class="flex items-center gap-5">
+            <a href="#" class="hover:text-stone-600 transition-colors">Privacy</a>
+            <a href="#" class="hover:text-stone-600 transition-colors">Terms</a>
+            <a href="#" class="hover:text-stone-600 transition-colors">Help</a>
         </div>
     </footer>
 </div>
 
+{{-- ═══════════════════════════════════
+     JS — submenu data + Alpine app
+═══════════════════════════════════ --}}
+@php
+    $submenus = [];
+    foreach($railItems as $item) {
+        if (!empty($item['children'])) {
+            $menuItems = [];
+            foreach($item['children'] as $child) {
+                if (isset($child['section'])) {
+                    $menuItems[] = [
+                        'type' => 'section',
+                        'label' => $child['section']
+                    ];
+                } else {
+                    $menuItems[] = [
+                        'type' => 'link',
+                        'label' => $child['label'],
+                        'url' => Route::has($child['route']) ? route($child['route']) : '#',
+                        'active' => request()->routeIs($child['route'])
+                    ];
+                }
+            }
+            $submenus[$item['id']] = [
+                'label' => $item['label'],
+                'icon' => $item['icon'],
+                'items' => $menuItems
+            ];
+        }
+    }
+@endphp
+
+<script>
+const SUBMENUS = @json($submenus);
+
+function layoutApp() {
+    return {
+        mobileOpen: false,
+        subOpen: false,
+        activeId: null,
+
+        init() {
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) this.mobileOpen = false;
+            });
+        },
+
+        toggleSubmenu(id, icon, label) {
+            if (this.subOpen && this.activeId === id) {
+                this.closeSubmenu();
+                return;
+            }
+            this._renderSubmenu(id);
+        },
+
+        _renderSubmenu(id) {
+            const data = SUBMENUS[id];
+            if (!data) return;
+
+            // Highlight active rail tile
+            document.querySelectorAll('.rail-tile').forEach(el => {
+                el.classList.toggle('active', el.dataset.id === id);
+            });
+
+            // Fill panel header
+            document.getElementById('sub-hd-path').setAttribute('d', data.icon);
+            document.getElementById('sub-hd-title').textContent = data.label;
+
+            // Fill panel body
+            const body = document.getElementById('sub-body');
+            body.innerHTML = data.items.map(item => {
+                if (item.type === 'section') {
+                    return `<div class="sub-section-label">${item.label}</div>`;
+                }
+                return `<a href="${item.url}" class="sub-link ${item.active ? 'active' : ''}">
+                    <span class="sub-dot"></span>${item.label}
+                </a>`;
+            }).join('');
+
+            this.activeId = id;
+            this.subOpen = true;
+            document.getElementById('sub-overlay').classList.add('on');
+        },
+
+        closeSubmenu() {
+            this.subOpen = false;
+            this.activeId = null;
+            document.getElementById('sub-overlay').classList.remove('on');
+        },
+
+        closeAll() {
+            this.closeSubmenu();
+            this.mobileOpen = false;
+        }
+    };
+}
+</script>
+
 @stack('scripts')
+{{-- Tailwind safelist --}}
+<div class="hidden bg-red-500 bg-green-500 bg-blue-500 col-span-1 col-span-2 col-span-3 grid-cols-3"></div>
 </body>
 </html>

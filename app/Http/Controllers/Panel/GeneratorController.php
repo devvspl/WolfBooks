@@ -324,7 +324,12 @@ PHP;
             $col    = $this->colName($f);
             $label  = $f->label ?: Str::headline($col);
             $thCols .= "                <th class=\"px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider\">{$label}</th>\n";
-            $tdCols .= "                <td class=\"px-6 py-4 text-stone-700\">{{ \${$varName}->{$col} ?? '—' }}</td>\n";
+            // repeater/json fields are arrays — show row count instead of raw value
+            if (in_array($f->field_type, ['repeater', 'json'])) {
+                $tdCols .= "                <td class=\"px-6 py-4 text-stone-700\">{{ is_array(\${$varName}->{$col}) ? count(\${$varName}->{$col}).' row(s)' : (\${$varName}->{$col} ?? '—') }}</td>\n";
+            } else {
+                $tdCols .= "                <td class=\"px-6 py-4 text-stone-700\">{{ \${$varName}->{$col} ?? '—' }}</td>\n";
+            }
         }
         file_put_contents("{$dir}/index.blade.php",  $this->indexView($title, $routeBase, $varPlural, $varName, $thCols, $tdCols));
         file_put_contents("{$dir}/create.blade.php", $this->formView($title, $routeBase, $varName, $fields, false));
@@ -471,9 +476,33 @@ HTML;
         foreach ($fields as $f) {
             $col   = $this->colName($f);
             $label = $f->label ?: Str::headline($col);
-            $inputs .= "            <div>\n                <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}</label>\n                <input type=\"text\" disabled value=\"{{ \${$varName}->{$col} ?? '—' }}\" class=\"w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed\">\n            </div>\n";
+            $span  = match((int)($f->col_span ?? 1)) { 2 => 'col-span-2', 3 => 'col-span-3', default => 'col-span-1' };
+
+            if (in_array($f->field_type, ['repeater', 'json'])) {
+                $subCols = $f->repeater_columns ?? [];
+                $thCells = '';
+                foreach ($subCols as $c) {
+                    $thCells .= "<th class=\"px-3 py-2 text-left text-xs font-semibold text-stone-500\">".htmlspecialchars($c['label'] ?? $c['key'])."</th>";
+                }
+                $inputs .= "            <div class=\"{$span}\">\n"
+                    . "                <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}</label>\n"
+                    . "                @php \$__rows = \${$varName}->{$col}; @endphp\n"
+                    . "                @if(is_array(\$__rows) && count(\$__rows))\n"
+                    . "                <div class=\"border border-stone-200 rounded-xl overflow-hidden\">\n"
+                    . "                    <table class=\"w-full text-sm\"><thead class=\"bg-stone-50 border-b border-stone-100\"><tr><th class=\"px-3 py-2 text-left text-xs font-semibold text-stone-500\">#</th>{$thCells}</tr></thead>\n"
+                    . "                    <tbody class=\"divide-y divide-stone-100\">\n"
+                    . "                    @foreach(\$__rows as \$__ri => \$__row)<tr><td class=\"px-3 py-2 text-stone-400 text-xs\">{{ \$__ri+1 }}</td>@foreach(\$__row as \$__v)<td class=\"px-3 py-2 text-stone-700 text-xs\">{{ \$__v ?? '—' }}</td>@endforeach</tr>@endforeach\n"
+                    . "                    </tbody></table>\n"
+                    . "                </div>\n"
+                    . "                @else\n"
+                    . "                <p class=\"text-sm text-stone-400\">No rows.</p>\n"
+                    . "                @endif\n"
+                    . "            </div>\n";
+            } else {
+                $inputs .= "            <div class=\"{$span}\">\n                <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}</label>\n                <input type=\"text\" disabled value=\"{{ \${$varName}->{$col} ?? '—' }}\" class=\"w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed\">\n            </div>\n";
+            }
         }
-        return "@extends('layouts.app')\n@section('content')\n<div class=\"bg-white border border-stone-200 rounded-2xl overflow-hidden\">\n    <div class=\"px-6 py-5 border-b border-stone-100 flex items-center justify-between\">\n        <div>\n            <h3 class=\"text-sm font-semibold text-stone-800\">{$title} — Detail</h3>\n            <p class=\"text-xs text-stone-400 mt-0.5\">Record #{{ \${$varName}->id }}</p>\n        </div>\n        <a href=\"{{ route('{$routeBase}.index') }}\" class=\"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors\"><svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"/></svg>Back</a>\n    </div>\n    <div class=\"p-6\">\n        <div class=\"grid grid-cols-1 sm:grid-cols-2 gap-5\">\n{$inputs}        </div>\n    </div>\n    <div class=\"px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end\">\n        <a href=\"{{ route('{$routeBase}.edit', \${$varName}) }}\" class=\"inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z\"/></svg>Edit</a>\n    </div>\n</div>\n@endsection\n";
+        return "@extends('layouts.app')\n@section('content')\n<div class=\"bg-white border border-stone-200 rounded-2xl overflow-hidden\">\n    <div class=\"px-6 py-5 border-b border-stone-100 flex items-center justify-between\">\n        <div>\n            <h3 class=\"text-sm font-semibold text-stone-800\">{$title} — Detail</h3>\n            <p class=\"text-xs text-stone-400 mt-0.5\">Record #{{ \${$varName}->id }}</p>\n        </div>\n        <a href=\"{{ route('{$routeBase}.index') }}\" class=\"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors\"><svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"/></svg>Back</a>\n    </div>\n    <div class=\"p-6\">\n        <div class=\"grid grid-cols-3 gap-5\">\n{$inputs}        </div>\n    </div>\n    <div class=\"px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end\">\n        <a href=\"{{ route('{$routeBase}.edit', \${$varName}) }}\" class=\"inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z\"/></svg>Edit</a>\n    </div>\n</div>\n@endsection\n";
     }
 
     // ── Routes ─────────────────────────────────────────────────────────────────

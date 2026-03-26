@@ -16,8 +16,8 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class AirExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
 {
-    protected array $columns = ['mode', 'agent_name', 'p_n_r_number', 'date_of_booking', 'journey_date', 'air_line', 'ticket_number:', 'journey_from', 'journey_upto', 'travel_class', 'location', 'items'];
-    protected array $headingLabels = ['Mode', 'Agent Name', 'P N R Number', 'Date Of Booking', 'Journey Date', 'Air Line', 'Ticket Number:', 'Journey From', 'Journey Upto', 'Travel Class', 'Location', 'Items'];
+    protected array $columns = ['mode', 'agent_name', 'p_n_r_number', 'date_of_booking', 'journey_date', 'air_line', 'ticket_number', 'journey_from', 'journey_upto', 'travel_class', 'location', 'items'];
+    protected array $headingLabels = ['Mode', 'Agent Name', 'P N R Number', 'Date Of Booking', 'Journey Date', 'Air Line', 'Ticket Number', 'Journey From', 'Journey Upto', 'Travel Class', 'Location', 'Items'];
 
     public function collection()
     {

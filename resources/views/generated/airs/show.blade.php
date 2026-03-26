@@ -9,54 +9,64 @@
         <a href="{{ route('generated.airs.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>Back</a>
     </div>
     <div class="p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
+        <div class="grid grid-cols-3 gap-5">
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Mode</label>
                 <input type="text" disabled value="{{ $air->mode ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Agent Name</label>
                 <input type="text" disabled value="{{ $air->agent_name ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">P N R Number</label>
                 <input type="text" disabled value="{{ $air->p_n_r_number ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Date Of Booking</label>
                 <input type="text" disabled value="{{ $air->date_of_booking ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Journey Date</label>
                 <input type="text" disabled value="{{ $air->journey_date ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Air Line</label>
                 <input type="text" disabled value="{{ $air->air_line ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1.5">Ticket Number:</label>
+            <div class="col-span-1">
+                <label class="block text-sm font-medium text-stone-700 mb-1.5">Ticket Number</label>
                 <input type="text" disabled value="{{ $air->ticket_number ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Journey From</label>
                 <input type="text" disabled value="{{ $air->journey_from ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Journey Upto</label>
                 <input type="text" disabled value="{{ $air->journey_upto ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Travel Class</label>
                 <input type="text" disabled value="{{ $air->travel_class ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Location</label>
                 <input type="text" disabled value="{{ $air->location ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-3">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Items</label>
-                <input type="text" disabled value="{{ $air->items ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
+                @php $__rows = $air->items; @endphp
+                @if(is_array($__rows) && count($__rows))
+                <div class="border border-stone-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-sm"><thead class="bg-stone-50 border-b border-stone-100"><tr><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">#</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">#</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Employee</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Emp Code</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Department</th></tr></thead>
+                    <tbody class="divide-y divide-stone-100">
+                    @foreach($__rows as $__ri => $__row)<tr><td class="px-3 py-2 text-stone-400 text-xs">{{ $__ri+1 }}</td>@foreach($__row as $__v)<td class="px-3 py-2 text-stone-700 text-xs">{{ $__v ?? '—' }}</td>@endforeach</tr>@endforeach
+                    </tbody></table>
+                </div>
+                @else
+                <p class="text-sm text-stone-400">No rows.</p>
+                @endif
             </div>
         </div>
     </div>

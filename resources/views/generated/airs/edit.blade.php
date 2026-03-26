@@ -46,8 +46,8 @@
                     @error('air_line')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div class="col-span-1">
-                    <label class="block text-sm font-medium text-stone-700 mb-1.5">Ticket Number:</label>
-                    <input type="text" name="ticket_number" value="{{ $air->ticket_number }}" placeholder="Ticket Number:" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('ticket_number') border-red-400 bg-red-50 @enderror">
+                    <label class="block text-sm font-medium text-stone-700 mb-1.5">Ticket Number</label>
+                    <input type="text" name="ticket_number" value="{{ $air->ticket_number }}" placeholder="Ticket Number" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('ticket_number') border-red-400 bg-red-50 @enderror">
                     @error('ticket_number')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div class="col-span-1">
@@ -70,7 +70,7 @@
                     <input type="text" name="location" value="{{ $air->location }}" placeholder="Location" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('location') border-red-400 bg-red-50 @enderror">
                     @error('location')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
-                <div class="col-span-1">
+                <div class="col-span-3">
                     <label class="block text-sm font-medium text-stone-700 mb-1.5">Items</label>
                     <div x-data="repeaterField('items')" class="border border-stone-200 rounded-xl overflow-hidden">
                         <table class="w-full text-sm" id="repeater_items">
@@ -80,6 +80,7 @@
                         <th class="px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">#</th>
                         <th class="px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Employee</th>
                         <th class="px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Emp Code</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Department</th>
                                     <th class="px-3 py-2 w-10"></th>
                                 </tr>
                             </thead>
@@ -91,6 +92,7 @@
                         <td class="px-2 py-1.5"><input type="text" name="items[][]" value="{{ $__row['col'] ?? '' }}" class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 transition"></td>
                         <td class="px-2 py-1.5"><input type="text" name="items[][]" value="{{ $__row['employee'] ?? '' }}" class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 transition"></td>
                         <td class="px-2 py-1.5"><input type="text" name="items[][]" value="{{ $__row['emp_code'] ?? '' }}" class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 transition"></td>
+                        <td class="px-2 py-1.5"><input type="text" name="items[][]" value="{{ $__row['department'] ?? '' }}" class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 transition"></td>
                         <td class="px-2 py-1.5 text-center"><button type="button" onclick="this.closest('tr').remove()" class="w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold">−</button></td>
                     </tr>
                     @endforeach
@@ -111,6 +113,7 @@
                         <td class="px-2 py-1.5"><input type="number" name="items[__IDX__][col]" value=""  class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition"></td>
                         <td class="px-2 py-1.5"><input type="text" name="items[__IDX__][employee]" value=""  class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition"></td>
                         <td class="px-2 py-1.5"><input type="text" name="items[__IDX__][emp_code]" value=""  class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition"></td>
+                        <td class="px-2 py-1.5"><input type="text" name="items[__IDX__][department]" value=""  class="w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition"></td>
                             <td class="px-2 py-1.5 text-center"><button type="button" onclick="this.closest('tr').remove(); window.renumberRepeater('items')" class="w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold">−</button></td>
                         </tr>
                     </template>                    @error('items')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror

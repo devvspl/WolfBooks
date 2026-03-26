@@ -51,7 +51,7 @@
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Date Of Booking</th>
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Journey Date</th>
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Air Line</th>
-                <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Ticket Number:</th>
+                <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Ticket Number</th>
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Journey From</th>
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Journey Upto</th>
                 <th class="px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Travel Class</th>
@@ -75,7 +75,7 @@
                 <td class="px-6 py-4 text-stone-700">{{ $air->journey_upto ?? '—' }}</td>
                 <td class="px-6 py-4 text-stone-700">{{ $air->travel_class ?? '—' }}</td>
                 <td class="px-6 py-4 text-stone-700">{{ $air->location ?? '—' }}</td>
-                <td class="px-6 py-4 text-stone-700">{{ $air->items ?? '—' }}</td>
+                <td class="px-6 py-4 text-stone-700">{{ is_array($air->items) ? count($air->items).' row(s)' : ($air->items ?? '—') }}</td>
                 <td class="px-6 py-4 text-right">
                     <div class="inline-flex items-center gap-2">
                         <a href="{{ route('generated.airs.show', $air) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>View</a>

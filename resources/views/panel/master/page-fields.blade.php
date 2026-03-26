@@ -533,6 +533,32 @@ $fieldTypes = [
                                            class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg outline-none text-white focus:border-red-500 transition">
                                 </div>
                                 <div class="sm:col-span-2">
+                                    <label class="block text-xs font-medium text-stone-400 mb-2">Column Width</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="col_span" value="1" :checked="(activeField.col_span ?? 1) == 1" class="sr-only peer">
+                                            <div class="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border border-white/15 bg-white/5 peer-checked:border-red-500 peer-checked:bg-red-900/30 transition-colors text-center">
+                                                <div class="flex gap-0.5 w-full"><div class="h-2 rounded-sm bg-red-500 w-1/3"></div><div class="h-2 rounded-sm bg-white/10 w-1/3"></div><div class="h-2 rounded-sm bg-white/10 w-1/3"></div></div>
+                                                <span class="text-[10px] text-stone-400 font-medium">1 / 3</span>
+                                            </div>
+                                        </label>
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="col_span" value="2" :checked="(activeField.col_span ?? 1) == 2" class="sr-only peer">
+                                            <div class="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border border-white/15 bg-white/5 peer-checked:border-red-500 peer-checked:bg-red-900/30 transition-colors text-center">
+                                                <div class="flex gap-0.5 w-full"><div class="h-2 rounded-sm bg-red-500 w-2/3"></div><div class="h-2 rounded-sm bg-white/10 w-1/3"></div></div>
+                                                <span class="text-[10px] text-stone-400 font-medium">2 / 3</span>
+                                            </div>
+                                        </label>
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="col_span" value="3" :checked="(activeField.col_span ?? 1) == 3" class="sr-only peer">
+                                            <div class="flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border border-white/15 bg-white/5 peer-checked:border-red-500 peer-checked:bg-red-900/30 transition-colors text-center">
+                                                <div class="flex gap-0.5 w-full"><div class="h-2 rounded-sm bg-red-500 w-full"></div></div>
+                                                <span class="text-[10px] text-stone-400 font-medium">Full</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-2">
                                     <button type="submit" class="w-full py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium transition-colors">
                                         Save Label / Key
                                     </button>
