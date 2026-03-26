@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -19,10 +19,10 @@ class GeneratorController extends Controller
         if ($fields->isEmpty()) {
             return back()->with('error', 'Add at least one field before generating.');
         }
-        $modelName  = Str::studly(Str::singular($page->page_name));
-        $tableName  = 'gen_' . Str::snake(Str::plural($page->page_name));
-        $routeSlug  = Str::slug(Str::plural($page->page_name));
-        $routeBase  = 'generated.' . $routeSlug;
+        $modelName = Str::studly(Str::singular($page->page_name));
+        $tableName = 'gen_' . Str::snake(Str::plural($page->page_name));
+        $routeSlug = Str::slug(Str::plural($page->page_name));
+        $routeBase = 'generated.' . $routeSlug;
         $viewFolder = 'generated/' . $routeSlug;
         try {
             $this->createMigration($tableName, $fields);
@@ -57,10 +57,10 @@ class GeneratorController extends Controller
             // ── Fresh create migration ────────────────────────────────────────
             $cols = '';
             foreach ($fields as $f) {
-                $col   = $this->colName($f);
+                $col = $this->colName($f);
                 $cols .= $this->migrationColumn($f, $col);
             }
-            $stub = "<?php\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Blueprint;\nuse Illuminate\\Support\\Facades\\Schema;\nreturn new class extends Migration {\n    public function up(): void\n    {\n        if (Schema::hasTable('{$tableName}')) return;\n        Schema::create('{$tableName}', function (Blueprint \$table) {\n            \$table->id();\n{$cols}            \$table->timestamps();\n        });\n    }\n    public function down(): void { Schema::dropIfExists('{$tableName}'); }\n};\n";
+            $stub = "<?php\nuse Illuminate\Database\Migrations\Migration;\nuse Illuminate\Database\Schema\Blueprint;\nuse Illuminate\Support\Facades\Schema;\nreturn new class extends Migration {\n    public function up(): void\n    {\n        if (Schema::hasTable('{$tableName}')) return;\n        Schema::create('{$tableName}', function (Blueprint \$table) {\n            \$table->id();\n{$cols}            \$table->timestamps();\n        });\n    }\n    public function down(): void { Schema::dropIfExists('{$tableName}'); }\n};\n";
             file_put_contents(database_path("migrations/{$timestamp}_create_{$tableName}_table.php"), $stub);
             return;
         }
@@ -87,8 +87,10 @@ class GeneratorController extends Controller
         // Columns to DROP (in table but not in fields, not reserved, and have no data)
         $toDrop = [];
         foreach ($existingCols as $col) {
-            if (in_array($col, $reserved)) continue;
-            if (in_array($col, $fieldCols)) continue;
+            if (in_array($col, $reserved))
+                continue;
+            if (in_array($col, $fieldCols))
+                continue;
             // Only drop if the column is entirely empty/null
             $hasData = DB::table($tableName)->whereNotNull($col)->where($col, '!=', '')->exists();
             if (!$hasData) {
@@ -96,20 +98,21 @@ class GeneratorController extends Controller
             }
         }
 
-        if (empty($toAdd) && empty($toDrop)) return;
+        if (empty($toAdd) && empty($toDrop))
+            return;
 
-        $addLines  = '';
+        $addLines = '';
         $dropLines = '';
-        $downAdd   = '';
-        $downDrop  = '';
+        $downAdd = '';
+        $downDrop = '';
 
         foreach ($toAdd as $item) {
-            $addLines .= "            " . trim($this->migrationColumn($item['field'], $item['col']));
+            $addLines .= '            ' . trim($this->migrationColumn($item['field'], $item['col']));
             $downDrop .= "            \$table->dropColumn('{$item['col']}');\n";
         }
         foreach ($toDrop as $col) {
             $dropLines .= "            \$table->dropColumn('{$col}');\n";
-            $downAdd   .= "            \$table->string('{$col}')->nullable();\n";
+            $downAdd .= "            \$table->string('{$col}')->nullable();\n";
         }
 
         $upBody = '';
@@ -118,27 +121,27 @@ class GeneratorController extends Controller
         }
         $downBody = "        Schema::table('{$tableName}', function (Blueprint \$table) {\n{$downAdd}{$downDrop}        });\n";
 
-        $stub = "<?php\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Blueprint;\nuse Illuminate\\Support\\Facades\\Schema;\nreturn new class extends Migration {\n    public function up(): void\n    {\n{$upBody}    }\n    public function down(): void\n    {\n{$downBody}    }\n};\n";
+        $stub = "<?php\nuse Illuminate\Database\Migrations\Migration;\nuse Illuminate\Database\Schema\Blueprint;\nuse Illuminate\Support\Facades\Schema;\nreturn new class extends Migration {\n    public function up(): void\n    {\n{$upBody}    }\n    public function down(): void\n    {\n{$downBody}    }\n};\n";
         file_put_contents(database_path("migrations/{$timestamp}_alter_{$tableName}_table.php"), $stub);
     }
 
     private function migrationColumn($field, string $col): string
     {
         $nullable = $field->is_nullable ? '->nullable()' : '';
-        $unique   = $field->is_unique   ? '->unique()'   : '';
-        $default  = ($field->default_value !== null && $field->default_value !== '') ? "->default('" . addslashes($field->default_value) . "')" : '';
-        $len      = $field->column_length ? ", {$field->column_length}" : '';
-        $type = match($field->field_type) {
-            'number'             => "\$table->integer('{$col}')",
-            'decimal', 'currency'=> "\$table->decimal('{$col}', 15, 2)",
+        $unique = $field->is_unique ? '->unique()' : '';
+        $default = ($field->default_value !== null && $field->default_value !== '') ? "->default('" . addslashes($field->default_value) . "')" : '';
+        $len = $field->column_length ? ", {$field->column_length}" : '';
+        $type = match ($field->field_type) {
+            'number' => "\$table->integer('{$col}')",
+            'decimal', 'currency' => "\$table->decimal('{$col}', 15, 2)",
             'toggle', 'checkbox' => "\$table->boolean('{$col}')",
-            'date'               => "\$table->date('{$col}')",
-            'datetime'           => "\$table->dateTime('{$col}')",
-            'time'               => "\$table->time('{$col}')",
-            'rating'             => "\$table->unsignedTinyInteger('{$col}')",
-            'json', 'repeater'   => "\$table->json('{$col}')",
-            'content'            => "\$table->text('{$col}')",
-            default              => "\$table->string('{$col}'{$len})",
+            'date' => "\$table->date('{$col}')",
+            'datetime' => "\$table->dateTime('{$col}')",
+            'time' => "\$table->time('{$col}')",
+            'rating' => "\$table->unsignedTinyInteger('{$col}')",
+            'json', 'repeater' => "\$table->json('{$col}')",
+            'content' => "\$table->text('{$col}')",
+            default => "\$table->string('{$col}'{$len})",
         };
         return "            {$type}{$nullable}{$unique}{$default};\n";
     }
@@ -148,22 +151,24 @@ class GeneratorController extends Controller
     private function createModel(string $modelName, string $tableName, $fields): void
     {
         $dir = app_path('Models/Generated');
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
         $fillable = $fields->map(fn($f) => "'" . ($this->colName($f)) . "'")->implode(', ');
         $casts = '';
         foreach ($fields as $f) {
-            $col  = $this->colName($f);
-            $cast = match($f->field_type) {
-                'toggle', 'checkbox'  => "'boolean'",
-                'number'              => "'integer'",
+            $col = $this->colName($f);
+            $cast = match ($f->field_type) {
+                'toggle', 'checkbox' => "'boolean'",
+                'number' => "'integer'",
                 'decimal', 'currency' => "'float'",
-                'json', 'repeater'    => "'array'",
-                default               => null,
+                'json', 'repeater' => "'array'",
+                default => null,
             };
-            if ($cast) $casts .= "        '{$col}' => {$cast},\n";
+            if ($cast)
+                $casts .= "        '{$col}' => {$cast},\n";
         }
         $castsBlock = $casts ? "    protected \$casts = [\n{$casts}    ];\n" : '';
-        $stub = "<?php\nnamespace App\\Models\\Generated;\nuse Illuminate\\Database\\Eloquent\\Model;\nclass {$modelName} extends Model\n{\n    protected \$table = '{$tableName}';\n    protected \$fillable = [{$fillable}];\n{$castsBlock}}\n";
+        $stub = "<?php\nnamespace App\Models\Generated;\nuse Illuminate\Database\Eloquent\Model;\nclass {$modelName} extends Model\n{\n    protected \$table = '{$tableName}';\n    protected \$fillable = [{$fillable}];\n{$castsBlock}}\n";
         file_put_contents("{$dir}/{$modelName}.php", $stub);
     }
 
@@ -172,83 +177,84 @@ class GeneratorController extends Controller
     private function createExport(string $modelName, $fields): void
     {
         $dir = app_path('Exports/Generated');
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
 
         $headings = $fields->map(fn($f) => "'" . ($f->label ?: Str::headline($this->colName($f))) . "'")->implode(', ');
-        $cols     = $fields->map(fn($f) => "'" . ($this->colName($f)) . "'")->implode(', ');
+        $cols = $fields->map(fn($f) => "'" . ($this->colName($f)) . "'")->implode(', ');
 
         $stub = <<<PHP
-<?php
-namespace App\Exports\Generated;
+            <?php
+            namespace App\\Exports\\Generated;
 
-use App\Models\Generated\\{$modelName};
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
+            use App\\Models\\Generated\\{$modelName};
+            use Maatwebsite\Excel\Concerns\FromCollection;
+            use Maatwebsite\Excel\Concerns\WithHeadings;
+            use Maatwebsite\Excel\Concerns\WithMapping;
+            use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+            use Maatwebsite\Excel\Concerns\WithStyles;
+            use Maatwebsite\Excel\Concerns\WithEvents;
+            use Maatwebsite\Excel\Events\AfterSheet;
+            use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+            use PhpOffice\PhpSpreadsheet\Style\Fill;
+            use PhpOffice\PhpSpreadsheet\Style\Border;
+            use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class {$modelName}Export implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
-{
-    protected array \$columns = [{$cols}];
-    protected array \$headingLabels = [{$headings}];
+            class {$modelName}Export implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
+            {
+                protected array \$columns = [{$cols}];
+                protected array \$headingLabels = [{$headings}];
 
-    public function collection()
-    {
-        return {$modelName}::all();
-    }
-
-    public function headings(): array
-    {
-        return [\$this->headingLabels];
-    }
-
-    public function map(\$row): array
-    {
-        return array_map(fn(\$col) => \$row->{\$col} ?? '', \$this->columns);
-    }
-
-    public function styles(Worksheet \$sheet)
-    {
-        \$lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count(\$this->headingLabels));
-        \$sheet->getStyle("A1:{\$lastCol}1")->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'B91C1C']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-        ]);
-        return [];
-    }
-
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet \$event) {
-                \$sheet     = \$event->sheet->getDelegate();
-                \$colCount  = count(\$this->headingLabels);
-                \$lastCol   = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\$colCount);
-                \$totalRows = \$sheet->getHighestRow();
-                for (\$row = 2; \$row <= \$totalRows; \$row++) {
-                    \$isEven = \$row % 2 === 1;
-                    \$sheet->getStyle("A{\$row}:{\$lastCol}{\$row}")->applyFromArray([
-                        'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => \$isEven ? 'FEF2F2' : 'FFFFFF']],
-                        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FECACA']]],
-                    ]);
+                public function collection()
+                {
+                    return {$modelName}::all();
                 }
-                \$sheet->getStyle("A1:{\$lastCol}1")->applyFromArray([
-                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '7F1D1D']]],
-                ]);
-                \$sheet->getRowDimension(1)->setRowHeight(20);
-            },
-        ];
-    }
-}
-PHP;
+
+                public function headings(): array
+                {
+                    return [\$this->headingLabels];
+                }
+
+                public function map(\$row): array
+                {
+                    return array_map(fn(\$col) => \$row->{\$col} ?? '', \$this->columns);
+                }
+
+                public function styles(Worksheet \$sheet)
+                {
+                    \$lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count(\$this->headingLabels));
+                    \$sheet->getStyle("A1:{\$lastCol}1")->applyFromArray([
+                        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'B91C1C']],
+                        'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+                    ]);
+                    return [];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        AfterSheet::class => function (AfterSheet \$event) {
+                            \$sheet     = \$event->sheet->getDelegate();
+                            \$colCount  = count(\$this->headingLabels);
+                            \$lastCol   = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(\$colCount);
+                            \$totalRows = \$sheet->getHighestRow();
+                            for (\$row = 2; \$row <= \$totalRows; \$row++) {
+                                \$isEven = \$row % 2 === 1;
+                                \$sheet->getStyle("A{\$row}:{\$lastCol}{\$row}")->applyFromArray([
+                                    'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => \$isEven ? 'FEF2F2' : 'FFFFFF']],
+                                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FECACA']]],
+                                ]);
+                            }
+                            \$sheet->getStyle("A1:{\$lastCol}1")->applyFromArray([
+                                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '7F1D1D']]],
+                            ]);
+                            \$sheet->getRowDimension(1)->setRowHeight(20);
+                        },
+                    ];
+                }
+            }
+            PHP;
         file_put_contents("{$dir}/{$modelName}Export.php", $stub);
     }
 
@@ -257,15 +263,16 @@ PHP;
     private function createController(string $modelName, string $routeBase, string $routeSlug, string $viewFolder, $fields, string $tableName): void
     {
         $dir = app_path('Http/Controllers/Generated');
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        $varName   = Str::camel($modelName);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
+        $varName = Str::camel($modelName);
         $varPlural = Str::camel(Str::plural($modelName));
         $hasUnique = $fields->contains('is_unique', true);
 
         // store rules (no ignore)
         $storeLines = '';
         foreach ($fields as $f) {
-            $col   = $this->colName($f);
+            $col = $this->colName($f);
             $rules = $f->is_required ? ["'required'"] : ["'nullable'"];
             // attach table name for unique rule generation
             $f->table_name = $tableName;
@@ -275,35 +282,36 @@ PHP;
         // update rules (unique ignores current record)
         $updateLines = '';
         foreach ($fields as $f) {
-            $col   = $this->colName($f);
+            $col = $this->colName($f);
             $rules = $f->is_required ? ["'required'"] : ["'nullable'"];
             $f->table_name = $tableName;
             $updateLines .= "            '{$col}' => [{$this->fieldValidationRules($f, $rules, $varName . '->id')}],\n";
         }
 
-        $ruleImport = $hasUnique ? "use Illuminate\\Validation\\Rule;\n" : '';
-        $stub = "<?php\nnamespace App\\Http\\Controllers\\Generated;\nuse App\\Http\\Controllers\\Controller;\nuse App\\Models\\Generated\\{$modelName};\nuse App\\Exports\\Generated\\{$modelName}Export;\nuse App\\Models\\ExportLog;\nuse Maatwebsite\\Excel\\Facades\\Excel;\nuse Illuminate\\Http\\Request;\nuse Illuminate\\Support\\Facades\\Auth;\nuse Illuminate\\Support\\Facades\\Storage;\n{$ruleImport}class {$modelName}Controller extends Controller\n{\n    public function index(Request \$request)\n    {\n        \$search = \$request->input('search');\n        \${$varPlural} = {$modelName}::when(\$search, fn(\$q) => \$q->where(array_key_first((new {$modelName})->getFillable() ? array_flip((new {$modelName})->getFillable()) : []), 'like', \"%{\$search}%\"))->latest()->paginate(15)->withQueryString();\n        \$exportLogs = ExportLog::where('model', '{$modelName}')->latest()->take(20)->get();\n        return view('{$viewFolder}.index', compact('{$varPlural}', 'search', 'exportLogs'));\n    }\n    public function export()\n    {\n        \$data = {$modelName}::orderBy('id')->get();\n        \$hash = md5(\$data->toJson());\n        \$existing = ExportLog::where('model', '{$modelName}')->where('data_hash', \$hash)->latest()->first();\n        if (\$existing && Storage::disk('public')->exists(\$existing->file_path)) {\n            return Storage::disk('public')->download(\$existing->file_path, \$existing->file_name);\n        }\n        \$fileName = '{$routeSlug}_' . now()->format('Ymd_His') . '.xlsx';\n        \$filePath = 'exports/' . \$fileName;\n        Excel::store(new {$modelName}Export, \$filePath, 'public');\n        ExportLog::create(['model' => '{$modelName}', 'file_name' => \$fileName, 'file_path' => \$filePath, 'row_count' => \$data->count(), 'data_hash' => \$hash, 'user_id' => Auth::id()]);\n        return Storage::disk('public')->download(\$filePath, \$fileName);\n    }\n    public function exportDownload(ExportLog \$exportLog)\n    {\n        abort_if(\$exportLog->model !== '{$modelName}', 403);\n        abort_unless(Storage::disk('public')->exists(\$exportLog->file_path), 404);\n        return Storage::disk('public')->download(\$exportLog->file_path, \$exportLog->file_name);\n    }\n    public function create() { return view('{$viewFolder}.create'); }\n    public function store(Request \$request)\n    {\n        \$data = \$request->validate([\n{$storeLines}        ]);\n        {$modelName}::create(\$data);\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record created.');\n    }\n    public function show({$modelName} \${$varName}) { return view('{$viewFolder}.show', compact('{$varName}')); }\n    public function edit({$modelName} \${$varName}) { return view('{$viewFolder}.edit', compact('{$varName}')); }\n    public function update(Request \$request, {$modelName} \${$varName})\n    {\n        \$data = \$request->validate([\n{$updateLines}        ]);\n        \${$varName}->update(\$data);\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record updated.');\n    }\n    public function destroy({$modelName} \${$varName})\n    {\n        \${$varName}->delete();\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record deleted.');\n    }\n}\n";
+        $ruleImport = $hasUnique ? "use Illuminate\Validation\Rule;\n" : '';
+        $stub = "<?php\nnamespace App\Http\Controllers\Generated;\nuse App\Http\Controllers\Controller;\nuse App\Models\Generated\\{$modelName};\nuse App\Exports\Generated\\{$modelName}Export;\nuse App\Models\ExportLog;\nuse Maatwebsite\Excel\Facades\Excel;\nuse Illuminate\Http\Request;\nuse Illuminate\Support\Facades\Auth;\nuse Illuminate\Support\Facades\Storage;\n{$ruleImport}class {$modelName}Controller extends Controller\n{\n    public function index(Request \$request)\n    {\n        \$search = \$request->input('search');\n        \${$varPlural} = {$modelName}::when(\$search, fn(\$q) => \$q->where(array_key_first((new {$modelName})->getFillable() ? array_flip((new {$modelName})->getFillable()) : []), 'like', \"%{\$search}%\"))->latest()->paginate(15)->withQueryString();\n        \$exportLogs = ExportLog::where('model', '{$modelName}')->latest()->take(20)->get();\n        return view('{$viewFolder}.index', compact('{$varPlural}', 'search', 'exportLogs'));\n    }\n    public function export()\n    {\n        \$data = {$modelName}::orderBy('id')->get();\n        \$hash = md5(\$data->toJson());\n        \$existing = ExportLog::where('model', '{$modelName}')->where('data_hash', \$hash)->latest()->first();\n        if (\$existing && Storage::disk('public')->exists(\$existing->file_path)) {\n            return Storage::disk('public')->download(\$existing->file_path, \$existing->file_name);\n        }\n        \$fileName = '{$routeSlug}_' . now()->format('Ymd_His') . '.xlsx';\n        \$filePath = 'exports/' . \$fileName;\n        Excel::store(new {$modelName}Export, \$filePath, 'public');\n        ExportLog::create(['model' => '{$modelName}', 'file_name' => \$fileName, 'file_path' => \$filePath, 'row_count' => \$data->count(), 'data_hash' => \$hash, 'user_id' => Auth::id()]);\n        return Storage::disk('public')->download(\$filePath, \$fileName);\n    }\n    public function exportDownload(ExportLog \$exportLog)\n    {\n        abort_if(\$exportLog->model !== '{$modelName}', 403);\n        abort_unless(Storage::disk('public')->exists(\$exportLog->file_path), 404);\n        return Storage::disk('public')->download(\$exportLog->file_path, \$exportLog->file_name);\n    }\n    public function create() { return view('{$viewFolder}.create'); }\n    public function store(Request \$request)\n    {\n        \$data = \$request->validate([\n{$storeLines}        ]);\n        {$modelName}::create(\$data);\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record created.');\n    }\n    public function show({$modelName} \${$varName}) { return view('{$viewFolder}.show', compact('{$varName}')); }\n    public function edit({$modelName} \${$varName}) { return view('{$viewFolder}.edit', compact('{$varName}')); }\n    public function update(Request \$request, {$modelName} \${$varName})\n    {\n        \$data = \$request->validate([\n{$updateLines}        ]);\n        \${$varName}->update(\$data);\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record updated.');\n    }\n    public function destroy({$modelName} \${$varName})\n    {\n        \${$varName}->delete();\n        return redirect()->route('{$routeBase}.index')->with('success', 'Record deleted.');\n    }\n}\n";
         file_put_contents("{$dir}/{$modelName}Controller.php", $stub);
     }
 
     private function fieldValidationRules($field, array $base, ?string $ignoreId = null): string
     {
-        $rules   = $base;
-        $rules[] = match($field->field_type) {
-            'email'              => "'email'",
-            'url'                => "'url'",
-            'number'             => "'integer'",
-            'decimal', 'currency'=> "'numeric'",
+        $rules = $base;
+        $rules[] = match ($field->field_type) {
+            'email' => "'email'",
+            'url' => "'url'",
+            'number' => "'integer'",
+            'decimal', 'currency' => "'numeric'",
             'toggle', 'checkbox' => "'boolean'",
-            'date', 'datetime'   => "'date'",
-            'rating'             => "'integer', 'min:1', 'max:5'",
-            'repeater'           => "'array'",
-            default              => "'string'",
+            'date', 'datetime' => "'date'",
+            'rating' => "'integer', 'min:1', 'max:5'",
+            'repeater' => "'array'",
+            default => "'string'",
         };
-        if ($field->column_length) $rules[] = "'max:{$field->column_length}'";
+        if ($field->column_length)
+            $rules[] = "'max:{$field->column_length}'";
         if ($field->is_unique) {
-            $col       = $this->colName($field);
-            $rules[]   = $ignoreId
+            $col = $this->colName($field);
+            $rules[] = $ignoreId
                 ? "Rule::unique('{$field->table_name}', '{$col}')->ignore(\${$ignoreId})"
                 : "Rule::unique('{$field->table_name}', '{$col}')";
         }
@@ -315,14 +323,15 @@ PHP;
     private function createViews(string $modelName, string $routeBase, string $viewFolder, $fields): void
     {
         $dir = resource_path("views/{$viewFolder}");
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        $varName   = Str::camel($modelName);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
+        $varName = Str::camel($modelName);
         $varPlural = Str::camel(Str::plural($modelName));
-        $title     = Str::headline($modelName);
+        $title = Str::headline($modelName);
         $thCols = $tdCols = '';
         foreach ($fields as $f) {
-            $col    = $this->colName($f);
-            $label  = $f->label ?: Str::headline($col);
+            $col = $this->colName($f);
+            $label = $f->label ?: Str::headline($col);
             $thCols .= "                <th class=\"px-6 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider\">{$label}</th>\n";
             // repeater/json fields are arrays — show row count instead of raw value
             if (in_array($f->field_type, ['repeater', 'json'])) {
@@ -331,10 +340,10 @@ PHP;
                 $tdCols .= "                <td class=\"px-6 py-4 text-stone-700\">{{ \${$varName}->{$col} ?? '—' }}</td>\n";
             }
         }
-        file_put_contents("{$dir}/index.blade.php",  $this->indexView($title, $routeBase, $varPlural, $varName, $thCols, $tdCols));
+        file_put_contents("{$dir}/index.blade.php", $this->indexView($title, $routeBase, $varPlural, $varName, $thCols, $tdCols));
         file_put_contents("{$dir}/create.blade.php", $this->formView($title, $routeBase, $varName, $fields, false));
-        file_put_contents("{$dir}/edit.blade.php",   $this->formView($title, $routeBase, $varName, $fields, true));
-        file_put_contents("{$dir}/show.blade.php",   $this->showView($title, $routeBase, $varName, $fields));
+        file_put_contents("{$dir}/edit.blade.php", $this->formView($title, $routeBase, $varName, $fields, true));
+        file_put_contents("{$dir}/show.blade.php", $this->showView($title, $routeBase, $varName, $fields));
     }
 
     private function indexView(string $title, string $routeBase, string $varPlural, string $varName, string $thCols, string $tdCols): string
@@ -344,33 +353,37 @@ PHP;
 
     private function formView(string $title, string $routeBase, string $varName, $fields, bool $isEdit): string
     {
-        $action  = $isEdit ? "route('{$routeBase}.update', \${$varName})" : "route('{$routeBase}.store')";
-        $method  = $isEdit ? "@method('PUT')" : '';
+        $action = $isEdit ? "route('{$routeBase}.update', \${$varName})" : "route('{$routeBase}.store')";
+        $method = $isEdit ? "@method('PUT')" : '';
         $heading = $isEdit ? "Edit {$title}" : "New {$title}";
-        $subtext = $isEdit ? "Update the record details." : "Fill in the details below.";
-        $btnText = $isEdit ? "Update Record" : "Create Record";
-        $inputs  = '';
+        $subtext = $isEdit ? 'Update the record details.' : 'Fill in the details below.';
+        $btnText = $isEdit ? 'Update Record' : 'Create Record';
+        $inputs = '';
         foreach ($fields as $f) {
-            $col         = $this->colName($f);
-            $label       = $f->label ?: Str::headline($col);
+            $col = $this->colName($f);
+            $label = $f->label ?: Str::headline($col);
             $placeholder = $f->placeholder ?: $label;
-            $oldVal      = $isEdit ? "\${$varName}->{$col}" : "old('{$col}')";
-            $inputs     .= $this->formInput($f, $col, $label, $placeholder, $oldVal);
+            $oldVal = $isEdit ? "\${$varName}->{$col}" : "old('{$col}')";
+            $inputs .= $this->formInput($f, $col, $label, $placeholder, $oldVal);
         }
         $hasRepeater = $fields->contains('field_type', 'repeater');
-        $repeaterScript = $hasRepeater ? "\n@push('scripts')\n<script>\ndocument.addEventListener('alpine:init', () => {\n    Alpine.data('repeaterField', (col) => ({\n        addRow() {\n            const tpl = document.getElementById('repeater_' + col + '_tpl');\n            const body = document.getElementById('repeater_' + col + '_body');\n            const clone = tpl.content.cloneNode(true);\n            const idx = body.querySelectorAll('tr').length;\n            clone.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/__IDX__/g, idx); });\n            body.appendChild(clone);\n            window.renumberRepeater(col);\n        }\n    }));\n});\nwindow.renumberRepeater = function(col) {\n    document.querySelectorAll('#repeater_' + col + '_body tr').forEach((tr, i) => {\n        const num = tr.querySelector('.row-num');\n        if (num) num.textContent = i + 1;\n        tr.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/\\[\\d+\\]/g, '[' + i + ']'); });\n    });\n};\n</script>\n@endpush\n" : '';
-        $ic = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10";
+        $repeaterScript = $hasRepeater ? "\n@push('scripts')\n<script>\ndocument.addEventListener('alpine:init', () => {\n    Alpine.data('repeaterField', (col) => ({\n        addRow() {\n            const tpl = document.getElementById('repeater_' + col + '_tpl');\n            const body = document.getElementById('repeater_' + col + '_body');\n            const clone = tpl.content.cloneNode(true);\n            const idx = body.querySelectorAll('tr').length;\n            clone.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/__IDX__/g, idx); });\n            body.appendChild(clone);\n            window.renumberRepeater(col);\n        }\n    }));\n});\nwindow.renumberRepeater = function(col) {\n    document.querySelectorAll('#repeater_' + col + '_body tr').forEach((tr, i) => {\n        const num = tr.querySelector('.row-num');\n        if (num) num.textContent = i + 1;\n        tr.querySelectorAll('[name]').forEach(el => { el.name = el.name.replace(/\[\d+\]/g, '[' + i + ']'); });\n    });\n};\n</script>\n@endpush\n" : '';
+        $ic = 'w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10';
         return "@extends('layouts.app')\n@section('content')\n<div class=\"bg-white border border-stone-200 rounded-2xl overflow-hidden\">\n    <div class=\"px-6 py-5 border-b border-stone-100 flex items-center justify-between\">\n        <div>\n            <h3 class=\"text-sm font-semibold text-stone-800\">{$heading}</h3>\n            <p class=\"text-xs text-stone-400 mt-0.5\">{$subtext}</p>\n        </div>\n        <a href=\"{{ route('{$routeBase}.index') }}\" class=\"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors\"><svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"/></svg>Back</a>\n    </div>\n    <form method=\"POST\" action=\"{{ {$action} }}\" enctype=\"multipart/form-data\">\n        @csrf {$method}\n        <div class=\"p-6\">\n            @if(\$errors->any())\n            <div class=\"mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl\">Please fix the errors below.</div>\n            @endif\n            <div class=\"grid grid-cols-3 gap-5\">\n{$inputs}            </div>\n        </div>\n        <div class=\"px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-3\">\n            <a href=\"{{ route('{$routeBase}.index') }}\" class=\"px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 bg-white border border-stone-300 hover:bg-stone-50 transition-colors\">Cancel</a>\n            <button type=\"submit\" class=\"inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"/></svg>{$btnText}</button>\n        </div>\n    </form>\n</div>\n@endsection\n{$repeaterScript}";
     }
 
     private function formInput($field, string $col, string $label, string $placeholder, string $oldVal): string
     {
-        $req  = $field->is_required ? ' <span class="text-red-500">*</span>' : '';
-        $span = match((int)($field->col_span ?? 1)) { 2 => 'col-span-2', 3 => 'col-span-3', default => 'col-span-1' };
-        $ic   = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('{$col}') border-red-400 bg-red-50 @enderror";
-        $err  = "                    @error('{$col}')<p class=\"mt-1.5 text-xs text-red-600\">{{ \$message }}</p>@enderror\n";
+        $req = $field->is_required ? ' <span class="text-red-500">*</span>' : '';
+        $span = match ((int) ($field->col_span ?? 1)) {
+            2 => 'col-span-2',
+            3 => 'col-span-3',
+            default => 'col-span-1'
+        };
+        $ic = "w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none transition border-stone-300 focus:border-red-700 focus:ring-2 focus:ring-red-700/10 @error('{$col}') border-red-400 bg-red-50 @enderror";
+        $err = "                    @error('{$col}')<p class=\"mt-1.5 text-xs text-red-600\">{{ \$message }}</p>@enderror\n";
         $base = "                <div class=\"{$span}\">\n                    <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}{$req}</label>\n";
-        $input = match($field->field_type) {
+        $input = match ($field->field_type) {
             'content', 'json' =>
                 "                    <textarea name=\"{$col}\" rows=\"4\" placeholder=\"{$placeholder}\" class=\"{$ic} resize-none\">{{ {$oldVal} }}</textarea>\n",
             'checkbox', 'toggle' =>
@@ -390,11 +403,15 @@ PHP;
 
     private function htmlInputType(string $type): string
     {
-        return match($type) {
+        return match ($type) {
             'number', 'rating', 'currency', 'decimal' => 'number',
-            'email' => 'email', 'phone' => 'tel', 'url' => 'url',
-            'password' => 'password', 'date' => 'date',
-            'datetime' => 'datetime-local', 'time' => 'time',
+            'email' => 'email',
+            'phone' => 'tel',
+            'url' => 'url',
+            'password' => 'password',
+            'date' => 'date',
+            'datetime' => 'datetime-local',
+            'time' => 'time',
             default => 'text',
         };
     }
@@ -406,22 +423,27 @@ PHP;
         // Build <th> headers
         $ths = '';
         foreach ($cols as $c) {
-            $req  = !empty($c['required']) ? ' <span class=\"text-red-500\">*</span>' : '';
+            $req = !empty($c['required']) ? ' <span class=\"text-red-500\">*</span>' : '';
             $ths .= "                        <th class=\"px-3 py-2 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider\">{$c['label']}{$req}</th>\n";
         }
 
         // Build one template <td> per column (used by JS to clone rows)
         $tds = '';
         foreach ($cols as $c) {
-            $inputType = match($c['type'] ?? 'text') {
-                'number', 'decimal' => 'number', 'email' => 'email',
-                'date' => 'date', 'datetime' => 'datetime-local', 'time' => 'time',
-                'checkbox' => 'checkbox', 'select' => 'select', 'textarea' => 'textarea',
+            $inputType = match ($c['type'] ?? 'text') {
+                'number', 'decimal' => 'number',
+                'email' => 'email',
+                'date' => 'date',
+                'datetime' => 'datetime-local',
+                'time' => 'time',
+                'checkbox' => 'checkbox',
+                'select' => 'select',
+                'textarea' => 'textarea',
                 default => 'text',
             };
-            $req  = !empty($c['required']) ? 'required' : '';
-            $def  = htmlspecialchars($c['default'] ?? '');
-            $ic   = "w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition";
+            $req = !empty($c['required']) ? 'required' : '';
+            $def = htmlspecialchars($c['default'] ?? '');
+            $ic = 'w-full px-2.5 py-1.5 text-sm border border-stone-300 rounded-lg outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/10 transition';
             if ($inputType === 'select') {
                 $inp = "<select name=\"{$col}[__IDX__][{$c['key']}]\" {$req} class=\"{$ic}\"><option value=\"\">-- Select --</option></select>";
             } elseif ($inputType === 'textarea') {
@@ -442,47 +464,51 @@ PHP;
         $editRows .= "                        <td class=\"px-2 py-1.5 text-center\"><button type=\"button\" onclick=\"this.closest('tr').remove()\" class=\"w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold\">−</button></td>\n                    </tr>\n                    @endforeach\n                    @endif\n";
 
         return <<<HTML
-                    <div x-data="repeaterField('{$col}')" class="border border-stone-200 rounded-xl overflow-hidden">
-                        <table class="w-full text-sm" id="repeater_{$col}">
-                            <thead class="bg-stone-800 text-white">
-                                <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold w-8">#</th>
-{$ths}                                    <th class="px-3 py-2 w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="repeater_{$col}_body">
-{$editRows}                            </tbody>
-                        </table>
-                        <div class="px-3 py-2 bg-stone-50 border-t border-stone-100">
-                            <button type="button" @click="addRow()"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                Add Row
-                            </button>
-                        </div>
-                    </div>
-                    <template id="repeater_{$col}_tpl">
-                        <tr>
-                            <td class="px-3 py-1.5 text-stone-400 text-sm row-num"></td>
-{$tds}                            <td class="px-2 py-1.5 text-center"><button type="button" onclick="this.closest('tr').remove(); window.renumberRepeater('{$col}')" class="w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold">−</button></td>
-                        </tr>
-                    </template>
-HTML;
+                                <div x-data="repeaterField('{$col}')" class="border border-stone-200 rounded-xl overflow-hidden">
+                                    <table class="w-full text-sm" id="repeater_{$col}">
+                                        <thead class="bg-stone-800 text-white">
+                                            <tr>
+                                                <th class="px-3 py-2 text-left text-xs font-semibold w-8">#</th>
+            {$ths}                                    <th class="px-3 py-2 w-10"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repeater_{$col}_body">
+            {$editRows}                            </tbody>
+                                    </table>
+                                    <div class="px-3 py-2 bg-stone-50 border-t border-stone-100">
+                                        <button type="button" @click="addRow()"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-white text-xs font-medium transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                            Add Row
+                                        </button>
+                                    </div>
+                                </div>
+                                <template id="repeater_{$col}_tpl">
+                                    <tr>
+                                        <td class="px-3 py-1.5 text-stone-400 text-sm row-num"></td>
+            {$tds}                            <td class="px-2 py-1.5 text-center"><button type="button" onclick="this.closest('tr').remove(); window.renumberRepeater('{$col}')" class="w-6 h-6 inline-flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold">−</button></td>
+                                    </tr>
+                                </template>
+            HTML;
     }
 
     private function showView(string $title, string $routeBase, string $varName, $fields): string
     {
         $inputs = '';
         foreach ($fields as $f) {
-            $col   = $this->colName($f);
+            $col = $this->colName($f);
             $label = $f->label ?: Str::headline($col);
-            $span  = match((int)($f->col_span ?? 1)) { 2 => 'col-span-2', 3 => 'col-span-3', default => 'col-span-1' };
+            $span = match ((int) ($f->col_span ?? 1)) {
+                2 => 'col-span-2',
+                3 => 'col-span-3',
+                default => 'col-span-1'
+            };
 
             if (in_array($f->field_type, ['repeater', 'json'])) {
                 $subCols = $f->repeater_columns ?? [];
                 $thCells = '';
                 foreach ($subCols as $c) {
-                    $thCells .= "<th class=\"px-3 py-2 text-left text-xs font-semibold text-stone-500\">".htmlspecialchars($c['label'] ?? $c['key'])."</th>";
+                    $thCells .= '<th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">' . htmlspecialchars($c['label'] ?? $c['key']) . '</th>';
                 }
                 $inputs .= "            <div class=\"{$span}\">\n"
                     . "                <label class=\"block text-sm font-medium text-stone-700 mb-1.5\">{$label}</label>\n"
@@ -509,22 +535,22 @@ HTML;
 
     private function appendRoutes(string $modelName, string $routeSlug): void
     {
-        $routesFile   = base_path('routes/web.php');
-        $content      = file_get_contents($routesFile);
+        $routesFile = base_path('routes/web.php');
+        $content = file_get_contents($routesFile);
 
         // Add use statement if missing
         $useStatement = "use App\\Http\\Controllers\\Generated\\{$modelName}Controller;";
         if (!str_contains($content, $useStatement)) {
             $content = str_replace(
-                "use Illuminate\\Support\\Facades\\Route;",
-                "use Illuminate\\Support\\Facades\\Route;\n{$useStatement}",
+                'use Illuminate\Support\Facades\Route;',
+                "use Illuminate\Support\Facades\Route;\n{$useStatement}",
                 $content
             );
         }
 
         $resourceLine = "        Route::get('{$routeSlug}/export', [{$modelName}Controller::class, 'export'])->name('{$routeSlug}.export');\n"
-                      . "        Route::get('{$routeSlug}/export/{exportLog}/download', [{$modelName}Controller::class, 'exportDownload'])->name('{$routeSlug}.export.download');\n"
-                      . "        Route::resource('{$routeSlug}', {$modelName}Controller::class);\n";
+            . "        Route::get('{$routeSlug}/export/{exportLog}/download', [{$modelName}Controller::class, 'exportDownload'])->name('{$routeSlug}.export.download');\n"
+            . "        Route::resource('{$routeSlug}', {$modelName}Controller::class);\n";
 
         if (!str_contains($content, "Route::resource('{$routeSlug}'")) {
             if (str_contains($content, "Route::prefix('generated')")) {
@@ -549,9 +575,9 @@ HTML;
                 }
             } else {
                 $group = "\n    // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────\n"
-                       . "    Route::prefix('generated')->name('generated.')->group(function () {\n"
-                       . $resourceLine
-                       . "    });\n";
+                    . "    Route::prefix('generated')->name('generated.')->group(function () {\n"
+                    . $resourceLine
+                    . "    });\n";
                 $content = str_replace("\n});\n", "\n{$group}\n});\n", $content);
             }
         }
