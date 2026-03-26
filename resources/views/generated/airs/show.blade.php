@@ -57,11 +57,11 @@
             <div class="col-span-3">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Items</label>
                 @php $__rows = $air->items; @endphp
-                @if(is_array($__rows) && count($__rows))
+                @if($__rows->count())
                 <div class="border border-stone-200 rounded-xl overflow-hidden">
                     <table class="w-full text-sm"><thead class="bg-stone-50 border-b border-stone-100"><tr><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">#</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">#</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Employee</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Emp Code</th><th class="px-3 py-2 text-left text-xs font-semibold text-stone-500">Department</th></tr></thead>
                     <tbody class="divide-y divide-stone-100">
-                    @foreach($__rows as $__ri => $__row)<tr><td class="px-3 py-2 text-stone-400 text-xs">{{ $__ri+1 }}</td>@foreach($__row as $__v)<td class="px-3 py-2 text-stone-700 text-xs">{{ $__v ?? '—' }}</td>@endforeach</tr>@endforeach
+                    @foreach($__rows as $__ri => $__row)<tr><td class="px-3 py-2 text-stone-400 text-xs">{{ $__ri+1 }}</td><td class="px-3 py-2 text-stone-700 text-xs">{{ $__row->col ?? '—' }}</td><td class="px-3 py-2 text-stone-700 text-xs">{{ $__row->employee ?? '—' }}</td><td class="px-3 py-2 text-stone-700 text-xs">{{ $__row->emp_code ?? '—' }}</td><td class="px-3 py-2 text-stone-700 text-xs">{{ $__row->department ?? '—' }}</td></tr>@endforeach
                     </tbody></table>
                 </div>
                 @else

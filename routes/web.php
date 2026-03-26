@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'updateSettings'])->name('master.page-builder.fields.settings');
     Route::put('/master/page-builder/{page}/fields/{field}/repeater', [PageFieldController::class, 'updateRepeaterColumns'])->name('master.page-builder.fields.repeater');
     Route::post('/master/page-builder/{page}/fields/reorder', [PageFieldController::class, 'reorder'])->name('master.page-builder.fields.reorder');
+    Route::get('/master/page-builder/get-columns', [PageFieldController::class, 'getColumns'])->name('master.page-builder.get-columns');
     Route::delete('/master/page-builder/{page}/fields/{field}', [PageFieldController::class, 'destroy'])->name('master.page-builder.fields.destroy');
 
     Route::get('/master/{tab}', [MasterController::class, 'tab'])->name('master.tab');

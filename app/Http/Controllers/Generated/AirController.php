@@ -13,7 +13,7 @@ class AirController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $airs = Air::when($search, fn($q) => $q->where(array_key_first((new Air)->getFillable() ? array_flip((new Air)->getFillable()) : []), 'like', "%{$search}%"))->latest()->paginate(15)->withQueryString();
+        $airs = Air::query()->with(['items'])->when($search, fn($q) => $q->where(array_key_first((new Air)->getFillable() ? array_flip((new Air)->getFillable()) : []), 'like', "%{$search}%"))->latest()->paginate(15)->withQueryString();
         $exportLogs = ExportLog::where('model', 'Air')->latest()->take(20)->get();
         return view('generated/airs.index', compact('airs', 'search', 'exportLogs'));
     }
@@ -37,7 +37,12 @@ class AirController extends Controller
         abort_unless(Storage::disk('public')->exists($exportLog->file_path), 404);
         return Storage::disk('public')->download($exportLog->file_path, $exportLog->file_name);
     }
-    public function create() { return view('generated/airs.create'); }
+    public function create()
+    {
+        $dynamicData = [];
+        $dynamicData['travel_class_options'] = \Illuminate\Support\Facades\DB::table('pages')->pluck('page_name', 'id');
+        return view('generated/airs.create', $dynamicData);
+    }
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -54,11 +59,23 @@ class AirController extends Controller
             'location' => ['nullable', 'string'],
             'items' => ['nullable', 'array'],
         ]);
-        Air::create($data);
+        $air = Air::create($data);
+        if ($request->has('items')) {
+            $air->items()->delete();
+            $rows = collect($request->input('items'))->filter(function($row) {
+                return !empty(array_filter($row, fn($v) => !is_null($v) && $v !== ''));
+            });
+            if ($rows->isNotEmpty()) $air->items()->createMany($rows->toArray());
+        }
         return redirect()->route('generated.airs.index')->with('success', 'Record created.');
     }
     public function show(Air $air) { return view('generated/airs.show', compact('air')); }
-    public function edit(Air $air) { return view('generated/airs.edit', compact('air')); }
+    public function edit(Air $air)
+    {
+        $dynamicData = [];
+        $dynamicData['travel_class_options'] = \Illuminate\Support\Facades\DB::table('pages')->pluck('page_name', 'id');
+        return view('generated/airs.edit', array_merge(compact('air'), $dynamicData));
+    }
     public function update(Request $request, Air $air)
     {
         $data = $request->validate([
@@ -76,6 +93,13 @@ class AirController extends Controller
             'items' => ['nullable', 'array'],
         ]);
         $air->update($data);
+        if ($request->has('items')) {
+            $air->items()->delete();
+            $rows = collect($request->input('items'))->filter(function($row) {
+                return !empty(array_filter($row, fn($v) => !is_null($v) && $v !== ''));
+            });
+            if ($rows->isNotEmpty()) $air->items()->createMany($rows->toArray());
+        }
         return redirect()->route('generated.airs.index')->with('success', 'Record updated.');
     }
     public function destroy(Air $air)
