@@ -16,8 +16,8 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class GlobalRegionExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
 {
-    protected array $columns = ['global_region_name', 'global_region_code', 'test'];
-    protected array $headingLabels = ['Global Region Name', 'Global Region Code', 'Test'];
+    protected array $columns = ['global_region_name', 'global_region_code'];
+    protected array $headingLabels = ['Global Region Name', 'Global Region Code'];
 
     public function collection()
     {

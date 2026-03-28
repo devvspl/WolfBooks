@@ -9,18 +9,14 @@
         <a href="{{ route('generated.global-regions.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>Back</a>
     </div>
     <div class="p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
+        <div class="grid grid-cols-3 gap-5">
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Global Region Name</label>
                 <input type="text" disabled value="{{ $globalRegion->global_region_name ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-sm font-medium text-stone-700 mb-1.5">Global Region Code</label>
                 <input type="text" disabled value="{{ $globalRegion->global_region_code ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1.5">Test</label>
-                <input type="text" disabled value="{{ $globalRegion->test ?? '—' }}" class="w-full px-3.5 py-2.5 text-sm border rounded-xl border-stone-200 bg-stone-50 text-stone-600 cursor-not-allowed">
             </div>
         </div>
     </div>
