@@ -157,7 +157,7 @@
                 {{-- Mobile: fixed bottom drawer --}}
                 fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[80vh] flex flex-col
                 transition-transform duration-300
-                lg:static lg:z-auto lg:rounded-2xl lg:max-h-none lg:w-64 lg:shrink-0 lg:translate-y-0
+                lg:static lg:z-auto lg:rounded-1xl lg:max-h-none lg:w-64 lg:shrink-0 lg:translate-y-0
                 bg-stone-900 shadow-2xl lg:shadow-lg overflow-hidden
             " :class="paletteOpen ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'" style="height: auto;"
             :style="'height:' + (window.innerWidth >= 1024 ? '100%' : 'auto')">
@@ -227,7 +227,7 @@
         </div>
 
         {{-- ══ RIGHT: Form Preview ══ --}}
-        <div class="flex-1 min-w-0 flex flex-col bg-white border border-stone-200 rounded-2xl overflow-hidden">
+        <div class="flex-1 min-w-0 flex flex-col bg-white border border-stone-200 rounded-1xl overflow-hidden">
 
             {{-- Toolbar --}}
             <div
@@ -303,7 +303,7 @@
             <div class="flex-1 overflow-y-auto p-4 sm:p-6">
                 @if($fields->isEmpty())
                     <div class="flex flex-col items-center justify-center h-full text-center py-20">
-                        <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 rounded-1xl bg-stone-100 flex items-center justify-center mb-4">
                             <svg class="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                     d="M4 6h16M4 12h8m-8 6h16" />

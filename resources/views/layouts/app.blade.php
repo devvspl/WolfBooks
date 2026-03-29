@@ -5,266 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — WolfBooks</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('main/css/custom.css') }}?v={{ time() }}">  
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>   
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-
-    <style>
-      
-
-        /* ── Icon Rail ── */
-        #icon-rail {
-            position: fixed;
-            top: 0; left: 0;
-            width: 72px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(180deg, #1c1917 0%, #3d0808 55%, #111110 100%);
-            border-right: 1px solid rgba(255,255,255,.06);
-            z-index: 40;
-            transition: transform .22s cubic-bezier(.4,0,.2,1);
-        }
-        @media (max-width: 1023px) {
-            #icon-rail { transform: translateX(-100%); }
-            #icon-rail.mob-open { transform: translateX(0); }
-        }
-
-        .rail-brand {
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-            flex-shrink: 0;
-        }
-        .rail-logo {
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #991b1b, #7f1d1d);
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,.12);
-            box-shadow: 0 2px 8px rgba(0,0,0,.4);
-        }
-        .rail-logo svg { width: 18px; height: 18px; color: #fca5a5; }
-
-        .rail-nav {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 6px 0;
-            scrollbar-width: none;
-        }
-        .rail-nav::-webkit-scrollbar { display: none; }
-
-        /* Icon tile */
-        .rail-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            width: 72px;
-            min-height: 58px;
-            padding: 8px 4px;
-            cursor: pointer;
-            position: relative;
-            border: none;
-            background: none;
-            color: rgba(255,255,255,.42);
-            text-decoration: none;
-            transition: background .14s, color .14s;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        .rail-tile:hover {
-            background: rgba(255,255,255,.07);
-            color: rgba(255,255,255,.82);
-        }
-        .rail-tile.active {
-            background: rgba(185,28,28,.32);
-            color: #fca5a5;
-        }
-        /* Left accent bar */
-        .rail-tile.active::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 50%;
-            transform: translateY(-50%);
-            width: 3px; height: 26px;
-            background: #f87171;
-            border-radius: 0 3px 3px 0;
-        }
-        .rail-tile svg { width: 20px; height: 20px; flex-shrink: 0; }
-        .rail-tile-label {
-            font-size: 9.5px;
-            font-weight: 600;
-            letter-spacing: .015em;
-            text-align: center;
-            line-height: 1.15;
-            max-width: 62px;
-        }
-        .rail-badge {
-            position: absolute;
-            top: 7px; right: 7px;
-            min-width: 15px; height: 15px;
-            background: #ef4444;
-            color: #fff;
-            font-size: 8.5px; font-weight: 700;
-            border-radius: 99px;
-            display: flex; align-items: center; justify-content: center;
-            padding: 0 3px;
-            border: 1.5px solid #1c1917;
-        }
-
-        /* Bottom user tile */
-        .rail-user {
-            flex-shrink: 0;
-            border-top: 1px solid rgba(255,255,255,.08);
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        /* ── Submenu Panel ── */
-        #submenu-panel {
-            position: fixed;
-            top: 0;
-            left: 72px;
-            width: 0;
-            height: 100vh;
-            background: #211e1c;
-            border-right: 1px solid rgba(255,255,255,.08);
-            z-index: 39;
-            overflow: hidden;
-            transition: width .22s cubic-bezier(.4,0,.2,1);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 6px 0 32px rgba(0,0,0,.45);
-        }
-        #submenu-panel.open { width: 192px; }
-
-        .sub-head {
-            height: 56px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0 14px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-            flex-shrink: 0;
-        }
-        .sub-head-icon {
-            width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(220,38,38,.28);
-            border-radius: 7px;
-            flex-shrink: 0;
-        }
-        .sub-head-icon svg { width: 15px; height: 15px; color: #fca5a5; }
-        .sub-head-title {
-            font-size: 11px; font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            white-space: nowrap;
-        }
-
-        .sub-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 6px 0 12px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,.08) transparent;
-        }
-        .sub-body::-webkit-scrollbar { width: 3px; }
-        .sub-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
-
-        .sub-section-label {
-            font-size: 9px; font-weight: 700;
-            letter-spacing: .1em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,.2);
-            padding: 12px 14px 3px;
-            white-space: nowrap;
-        }
-        .sub-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 33px;
-            padding: 0 14px;
-            font-size: 12.5px; font-weight: 500;
-            color: rgba(255,255,255,.48);
-            white-space: nowrap;
-            text-decoration: none;
-            transition: background .12s, color .12s;
-        }
-        .sub-link:hover {
-            background: rgba(255,255,255,.06);
-            color: rgba(255,255,255,.88);
-        }
-        .sub-link.active {
-            color: #fca5a5;
-            background: rgba(185,28,28,.2);
-        }
-        .sub-dot {
-            width: 4px; height: 4px;
-            border-radius: 50%;
-            background: currentColor;
-            flex-shrink: 0;
-            opacity: .55;
-        }
-        .sub-link.active .sub-dot { opacity: 1; }
-
-        /* Overlay to close submenu on outside click */
-        #sub-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 38;
-        }
-        #sub-overlay.on { display: block; }
-
-        /* Mobile backdrop */
-        #mob-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.55);
-            backdrop-filter: blur(3px);
-            z-index: 35;
-        }
-
-        /* ── Main wrapper ── */
-        #main-wrap {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin-left: 72px;
-            transition: margin-left .22s cubic-bezier(.4,0,.2,1);
-        }
-        #main-wrap.shifted { margin-left: 264px; /* 72+192 */ }
-        @media (max-width: 1023px) {
-            #main-wrap, #main-wrap.shifted { margin-left: 0 !important; }
-        }
-
-        /* ── Topbar ── */
-        #topbar {
-            position: sticky; top: 0; z-index: 20;
-            height: 56px;
-            background: rgba(255,255,255,.96);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e7e5e4;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0 16px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.05);
-        }
-    </style>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 </head>
 
 <body class="h-full font-sans antialiased bg-stone-100 text-stone-900"
@@ -317,6 +65,8 @@
             'route' => 'master',
             'icon'  => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
             'children' => [
+                ['section' => 'Core'],
+                ['label' => 'Builder',  'route' => 'master.page-builder'],
                 ['section' => 'Accounts'],
                 ['label' => 'Chart of Accounts', 'route' => 'master.accounts'],
                 ['label' => 'Account Groups',    'route' => 'master.account-groups'],
@@ -594,7 +344,7 @@
                      x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                      @click.outside="open=false"
                      class="absolute right-0 mt-2 w-[min(320px,calc(100vw-1.5rem))] bg-white border border-stone-200
-                            rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right">
+                            rounded-1xl shadow-2xl overflow-hidden z-50 origin-top-right">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                         <h3 class="text-sm font-semibold text-stone-800">Notifications</h3>
                         <span class="text-xs text-red-700 font-medium bg-red-50 px-2 py-0.5 rounded-full">3 new</span>
@@ -627,7 +377,7 @@
     </header>
 
     {{-- PAGE CONTENT --}}
-    <main class="flex-1 p-4 md:p-6 xl:p-8">
+    <main class="flex-1 p-1 md:p-3 xl:p-4">
 
         @if(session('success'))
         <div x-data="{ show: true }" x-show="show" x-transition
@@ -651,7 +401,7 @@
     </main>
 
     {{-- FOOTER --}}
-    <footer class="shrink-0 px-6 py-4 border-t border-stone-200
+    <footer class="shrink-0 px-6 py-1 border-t border-stone-200
                    flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-400">
         <span>© {{ date('Y') }} WolfBooks Accounting. All rights reserved.</span>
         <div class="flex items-center gap-5">

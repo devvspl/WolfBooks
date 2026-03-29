@@ -7,12 +7,12 @@
 <div class="max-w-3xl mx-auto space-y-6" x-data="{ tab: 'general' }">
 
     {{-- Tab header --}}
-    <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+    <div class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
         <div class="px-6 py-5 border-b border-stone-100">
             <h2 class="text-sm font-semibold text-stone-800">Application Settings</h2>
             <p class="text-xs text-stone-400 mt-0.5">Manage your workspace and appearance preferences.</p>
         </div>
-        <div class="flex gap-1 px-4">
+        <div class="flex gap-1 px-0">
             @foreach([
                 'general'    => ['General',    'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'],
                 'appearance' => ['Appearance', 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'],
@@ -38,7 +38,7 @@
         <div x-show="tab === 'general'"
              x-transition:enter="transition-opacity duration-150"
              x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+             class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
             <div class="px-6 py-5 border-b border-stone-100">
                 <h3 class="text-sm font-semibold text-stone-800">General</h3>
                 <p class="text-xs text-stone-400 mt-0.5">Core workspace properties.</p>
@@ -85,7 +85,7 @@
                     </select>
                 </div>
             </div>
-            <div class="px-6 py-4 bg-stone-50 border-t border-stone-100 flex justify-end">
+            <div class="px-6 py-1 bg-stone-50 border-t border-stone-100 flex justify-end">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700
                                text-white text-sm font-medium transition-colors shadow-sm">
@@ -101,7 +101,7 @@
         <div x-show="tab === 'appearance'"
              x-transition:enter="transition-opacity duration-150"
              x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+             class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
             <div class="px-6 py-5 border-b border-stone-100">
                 <h3 class="text-sm font-semibold text-stone-800">Appearance</h3>
                 <p class="text-xs text-stone-400 mt-0.5">Customize the look of your workspace.</p>
@@ -144,7 +144,7 @@
                     </div>
                 </div>
             </div>
-            <div class="px-6 py-4 bg-stone-50 border-t border-stone-100 flex justify-end">
+            <div class="px-6 py-1 bg-stone-50 border-t border-stone-100 flex justify-end">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700
                                text-white text-sm font-medium transition-colors shadow-sm">

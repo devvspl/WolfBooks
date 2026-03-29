@@ -3,7 +3,7 @@
 @php $tab = 'page-builder'; @endphp
 
 @section('master-content')
-<div class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+<div class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
     <div class="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
         <div>
             <h3 class="text-sm font-semibold text-stone-800">{{ $page ? 'Edit Page' : 'New Page' }}</h3>
@@ -38,7 +38,7 @@
             @enderror
         </div>
 
-        <div class="px-6 py-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-3">
+        <div class="px-6 py-1 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-3">
             <a href="{{ route('master.page-builder') }}"
                class="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600
                       bg-white border border-stone-300 hover:bg-stone-50 transition-colors">

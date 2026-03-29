@@ -6,25 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
 
 class PageBuilderController extends Controller
 {
-    public function index(Request $request)
+    // ── List view ──────────────────────────────────────────────────────────
+    public function index()
     {
-        $search = $request->input('search');
-
-        $pages = Page::where('user_id', Auth::id())
-            ->when($search, fn($q) => $q->where('page_name', 'like', "%{$search}%"))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('panel.master.page-builder', compact('pages', 'search'));
+        return view('panel.master.page-builder');
     }
 
+    // ── DataTables server-side data endpoint ───────────────────────────────
+    public function data(Request $request)
+    {
+        $query = Page::where('user_id', Auth::id())
+            ->select(['id', 'page_name', 'created_at', 'updated_at']);
+
+        return DataTables::of($query)
+            ->addIndexColumn()                          // adds DT_RowIndex
+            ->editColumn('created_at', fn($row) => $row->created_at->format('d M Y, h:i A'))
+            ->editColumn('updated_at', fn($row) => $row->updated_at->format('d M Y, h:i A'))
+            ->rawColumns([])                            // no raw HTML columns needed
+            ->make(true);
+    }
+
+    // ── Fields JSON (off-canvas) ───────────────────────────────────────────
     public function fields(Page $page)
     {
         abort_if($page->user_id !== Auth::id(), 403);
+
         return response()->json([
             'page'   => ['id' => $page->id, 'page_name' => $page->page_name],
             'fields' => $page->fields->map(fn($f) => [
@@ -35,11 +45,13 @@ class PageBuilderController extends Controller
         ]);
     }
 
+    // ── Create form ────────────────────────────────────────────────────────
     public function create()
     {
         return view('panel.master.page-builder-form', ['page' => null]);
     }
 
+    // ── Store ──────────────────────────────────────────────────────────────
     public function store(Request $request)
     {
         $request->validate([
@@ -47,10 +59,10 @@ class PageBuilderController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'unique:pages,page_name,NULL,id,user_id,' . Auth::id()
-            ]
+                'unique:pages,page_name,NULL,id,user_id,' . Auth::id(),
+            ],
         ], [
-            'page_name.unique' => 'A page with this name already exists.'
+            'page_name.unique' => 'A page with this name already exists.',
         ]);
 
         Page::create([
@@ -59,15 +71,18 @@ class PageBuilderController extends Controller
         ]);
 
         return redirect()->route('master.page-builder')
-                         ->with('success', 'Page created successfully.');
+            ->with('success', 'Page created successfully.');
     }
 
+    // ── Edit form ──────────────────────────────────────────────────────────
     public function edit(Page $page)
     {
         abort_if($page->user_id !== Auth::id(), 403);
+
         return view('panel.master.page-builder-form', compact('page'));
     }
 
+    // ── Update ─────────────────────────────────────────────────────────────
     public function update(Request $request, Page $page)
     {
         abort_if($page->user_id !== Auth::id(), 403);
@@ -77,18 +92,19 @@ class PageBuilderController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'unique:pages,page_name,' . $page->id . ',id,user_id,' . Auth::id()
-            ]
+                'unique:pages,page_name,' . $page->id . ',id,user_id,' . Auth::id(),
+            ],
         ], [
-            'page_name.unique' => 'A page with this name already exists.'
+            'page_name.unique' => 'A page with this name already exists.',
         ]);
 
         $page->update(['page_name' => $request->page_name]);
 
         return redirect()->route('master.page-builder')
-                         ->with('success', 'Page updated successfully.');
+            ->with('success', 'Page updated successfully.');
     }
 
+    // ── Single destroy ─────────────────────────────────────────────────────
     public function destroy(Page $page)
     {
         abort_if($page->user_id !== Auth::id(), 403);
@@ -100,47 +116,60 @@ class PageBuilderController extends Controller
         $page->delete();
 
         return redirect()->route('master.page-builder')
-                         ->with('success', 'Page deleted successfully.');
+            ->with('success', 'Page deleted successfully.');
     }
 
+    // ── Bulk destroy (called via fetch from DataTable) ─────────────────────
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:pages,id',
+        ]);
+
+        $pages = Page::whereIn('id', $request->ids)
+            ->where('user_id', Auth::id())
+            ->get();
+
+        foreach ($pages as $page) {
+            if ($page->is_generated) {
+                $this->cleanupGenerated($page->page_name);
+            }
+            $page->delete();
+        }
+
+        return response()->json([
+            'message' => 'Deleted ' . $pages->count() . ' page(s) successfully.',
+            'deleted' => $pages->count(),
+        ]);
+    }
+
+    // ── Internal helpers ────────────────────────────────────────────────────
     private function cleanupGenerated(string $pageName): void
     {
         $modelName  = \Illuminate\Support\Str::studly(\Illuminate\Support\Str::singular($pageName));
         $routeSlug  = \Illuminate\Support\Str::slug(\Illuminate\Support\Str::plural($pageName));
         $viewFolder = resource_path("views/generated/{$routeSlug}");
 
-        // Delete model
         $this->deleteFileIfExists(app_path("Models/Generated/{$modelName}.php"));
-
-        // Delete controller
         $this->deleteFileIfExists(app_path("Http/Controllers/Generated/{$modelName}Controller.php"));
-
-        // Delete export
         $this->deleteFileIfExists(app_path("Exports/Generated/{$modelName}Export.php"));
 
-        // Delete views folder
         if (is_dir($viewFolder)) {
             array_map('unlink', glob("{$viewFolder}/*.blade.php"));
             @rmdir($viewFolder);
         }
 
-        // Delete migration files (create + alter) for this table
         $tableName = 'gen_' . \Illuminate\Support\Str::snake(\Illuminate\Support\Str::plural($pageName));
         foreach (glob(database_path("migrations/*_{$tableName}_table.php")) as $file) {
             @unlink($file);
         }
 
-        // Remove routes from web.php
         $routesFile = base_path('routes/web.php');
         $content    = file_get_contents($routesFile);
 
-        // Remove use statement line
         $content = preg_replace("/^use App\\\\Http\\\\Controllers\\\\Generated\\\\{$modelName}Controller;\r?\n/m", '', $content);
-
-        // Remove export route line
         $content = preg_replace("/^[ \t]*Route::get\('{$routeSlug}\/export'[^\n]+\r?\n/m", '', $content);
-
-        // Remove resource route line
         $content = preg_replace("/^[ \t]*Route::resource\('{$routeSlug}'[^\n]+\r?\n/m", '', $content);
 
         file_put_contents($routesFile, $content);
@@ -148,6 +177,8 @@ class PageBuilderController extends Controller
 
     private function deleteFileIfExists(string $path): void
     {
-        if (file_exists($path)) unlink($path);
+        if (file_exists($path)) {
+            unlink($path);
+        }
     }
 }

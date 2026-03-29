@@ -67,7 +67,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {{-- Recent Invoices --}}
-        <div class="lg:col-span-2 bg-white border border-stone-200 rounded-2xl overflow-hidden">
+        <div class="lg:col-span-2 bg-white border border-stone-200 rounded-1xl overflow-hidden">
             <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
                 <h2 class="text-sm font-semibold text-stone-800">Recent Invoices</h2>
                 <a href="#" class="text-xs text-red-700 font-medium hover:underline">View all →</a>
@@ -96,7 +96,7 @@
         </div>
 
         {{-- Quick Actions --}}
-        <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+        <div class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
             <div class="px-5 py-4 border-b border-stone-100">
                 <h2 class="text-sm font-semibold text-stone-800">Quick Actions</h2>
             </div>

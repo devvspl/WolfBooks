@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Generated\GlobalRegionController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\GeneratorController;
 use App\Http\Controllers\Panel\MasterController;
@@ -11,7 +10,6 @@ use App\Http\Controllers\Panel\ProfileController;
 use App\Http\Controllers\Panel\SettingsController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Generated\AirController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -43,13 +41,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/master', [MasterController::class, 'index'])->name('master');
 
     // Page Builder CRUD
-    Route::get('/master/page-builder', [PageBuilderController::class, 'index'])->name('master.page-builder');
-    Route::get('/master/page-builder/add', [PageBuilderController::class, 'create'])->name('master.page-builder.create');
-    Route::post('/master/page-builder', [PageBuilderController::class, 'store'])->name('master.page-builder.store');
-    Route::get('/master/page-builder/{page}/edit', [PageBuilderController::class, 'edit'])->name('master.page-builder.edit');
-    Route::put('/master/page-builder/{page}', [PageBuilderController::class, 'update'])->name('master.page-builder.update');
-    Route::delete('/master/page-builder/{page}', [PageBuilderController::class, 'destroy'])->name('master.page-builder.destroy');
-    Route::get('/master/page-builder/{page}/fields/json', [PageBuilderController::class, 'fields'])->name('master.page-builder.fields.json');
+    Route::get('/master/page-builder',              [PageBuilderController::class, 'index'])->name('master.page-builder');
+    Route::get('/master/page-builder/data',         [PageBuilderController::class, 'data'])->name('master.page-builder.data');
+    Route::get('/master/page-builder/add',          [PageBuilderController::class, 'create'])->name('master.page-builder.create');
+    Route::post('/master/page-builder',             [PageBuilderController::class, 'store'])->name('master.page-builder.store');
+    Route::post('/master/page-builder/bulk-destroy', [PageBuilderController::class, 'bulkDestroy'])->name('master.page-builder.bulk-destroy');
+    Route::get('/master/page-builder/{page}/edit',  [PageBuilderController::class, 'edit'])->name('master.page-builder.edit');
+    Route::put('/master/page-builder/{page}',       [PageBuilderController::class, 'update'])->name('master.page-builder.update');
+    Route::delete('/master/page-builder/{page}',    [PageBuilderController::class, 'destroy'])->name('master.page-builder.destroy');
     Route::post('/master/page-builder/{page}/generate', [GeneratorController::class, 'generate'])->name('master.page-builder.generate');
 
     // Page Fields
@@ -74,11 +73,7 @@ Route::middleware('auth')->group(function () {
 
     // ── Generated CRUD routes (auto-appended by GeneratorController) ──────────
     Route::prefix('generated')->name('generated.')->group(function () {
-        Route::get('global-regions/export', [GlobalRegionController::class, 'export'])->name('global-regions.export');
         Route::get('global-regions/export/{exportLog}/download', [GlobalRegionController::class, 'exportDownload'])->name('global-regions.export.download');
-        Route::resource('global-regions', GlobalRegionController::class);
-        Route::get('airs/export', [AirController::class, 'export'])->name('airs.export');
         Route::get('airs/export/{exportLog}/download', [AirController::class, 'exportDownload'])->name('airs.export.download');
-        Route::resource('airs', AirController::class);
     });
 });

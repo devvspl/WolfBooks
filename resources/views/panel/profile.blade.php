@@ -7,14 +7,14 @@
 <div class="max-w-3xl mx-auto space-y-6" x-data="{ tab: 'info' }">
 
     {{-- Profile header card --}}
-    <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+    <div class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
         <div class="h-24 bg-gradient-to-r from-stone-900 via-red-950 to-stone-900"></div>
         <div class="px-6 pb-0">
             {{-- Avatar + name row --}}
             <div class="flex flex-wrap items-start gap-4 -mt-10 mb-5">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=7f1d1d&color=fca5a5&size=160"
                      alt="Avatar"
-                     class="w-20 h-20 rounded-2xl border-4 border-white shadow-lg shrink-0 mt-0">
+                     class="w-20 h-20 rounded-1xl border-4 border-white shadow-lg shrink-0 mt-0">
                 <div class="pt-12 flex-1 min-w-0">
                     <h2 class="text-lg font-bold text-stone-900 break-words">{{ $user->name }}</h2>
                     <p class="text-sm text-stone-500 break-all">{{ $user->email }}</p>
@@ -49,7 +49,7 @@
     {{-- Account Info tab --}}
     <div x-show="tab === 'info'" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
         <form method="POST" action="{{ route('profile.update.info') }}"
-              class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+              class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
             @csrf
             <div class="px-6 py-5 border-b border-stone-100">
                 <h3 class="text-sm font-semibold text-stone-800">Personal Information</h3>
@@ -84,7 +84,7 @@
                            class="w-full px-3.5 py-2.5 text-sm border border-stone-200 rounded-xl bg-stone-50 text-stone-400 cursor-not-allowed">
                 </div>
             </div>
-            <div class="px-6 py-4 bg-stone-50 border-t border-stone-100 flex justify-end">
+            <div class="px-6 py-1 bg-stone-50 border-t border-stone-100 flex justify-end">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700
                                text-white text-sm font-medium transition-colors shadow-sm">
@@ -100,7 +100,7 @@
     {{-- Change Password tab --}}
     <div x-show="tab === 'password'" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
         <form method="POST" action="{{ route('profile.update.password') }}"
-              class="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+              class="bg-white border border-stone-200 rounded-1xl overflow-hidden">
             @csrf
             <div class="px-6 py-5 border-b border-stone-100">
                 <h3 class="text-sm font-semibold text-stone-800">Change Password</h3>
@@ -141,7 +141,7 @@
                     <p class="text-xs text-amber-700">You will remain logged in after changing your password.</p>
                 </div>
             </div>
-            <div class="px-6 py-4 bg-stone-50 border-t border-stone-100 flex justify-end">
+            <div class="px-6 py-1 bg-stone-50 border-t border-stone-100 flex justify-end">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-800 hover:bg-red-700
                                text-white text-sm font-medium transition-colors shadow-sm">

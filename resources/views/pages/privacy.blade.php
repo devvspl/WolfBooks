@@ -34,7 +34,7 @@
 
     <!-- Content -->
     <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <div class="bg-white dark:bg-stone-900 shadow-xl rounded-2xl p-8 sm:p-12 border border-stone-100 dark:border-stone-800">
+        <div class="bg-white dark:bg-stone-900 shadow-xl rounded-1xl p-8 sm:p-12 border border-stone-100 dark:border-stone-800">
             <h1 class="text-3xl font-extrabold text-stone-900 dark:text-white mb-6">Privacy Policy</h1>
             <p class="text-sm text-stone-500 mb-8">Last updated: {{ date('F j, Y') }}</p>
             

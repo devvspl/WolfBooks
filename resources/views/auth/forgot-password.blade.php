@@ -32,7 +32,7 @@
         </div>
     @endif
 
-    <div class="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-stone-100 dark:bg-stone-900/80 dark:border-stone-800/50 backdrop-blur-md">
+    <div class="bg-white py-8 px-4 shadow-xl sm:rounded-1xl sm:px-10 border border-stone-100 dark:bg-stone-900/80 dark:border-stone-800/50 backdrop-blur-md">
         <form class="space-y-6" action="{{ route('password.email') }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true">
             @csrf
             <div>

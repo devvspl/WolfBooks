@@ -26,7 +26,7 @@
 
             <div class="relative z-10 flex flex-col items-center justify-center px-12 xl:px-24 h-full text-center">
                 <!-- Icon -->
-                <div class="flex items-center justify-center w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl mb-8 shadow-2xl border border-white/10">
+                <div class="flex items-center justify-center w-24 h-24 bg-white/10 backdrop-blur-md rounded-1xl mb-8 shadow-2xl border border-white/10">
                     <svg class="w-12 h-12 text-stone-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                     </svg>
